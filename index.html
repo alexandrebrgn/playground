@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playground - Sports & Réservations</title>
+    <link rel="icon" type="image/png" href="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=32&h=32&q=80">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        
+
+        :root {
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --surface-subtle: #f1f5f9;
+            --primary: #0f172a;
+            --accent: #2563eb;
+            --coral: #f43f5e;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', Arial, sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+        
+        header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        
+        .back-btn { background: var(--surface-subtle); border: 1px solid var(--border); padding: 8px 14px; border-radius: 999px; color: var(--text-main); font-weight: 600; font-size: 13px; cursor: pointer; text-decoration: none; transition: background 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .back-btn:hover { background: #e2e8f0; }
+
+        .logo { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 24px; font-weight: 800; color: var(--primary); cursor: pointer; letter-spacing: -0.5px; }
+        .logo span { color: var(--accent); }
+
+        .nav-links { display: flex; gap: 12px; align-items: center; }
+        .nav-btn { background: var(--surface); border: 1px solid var(--border); padding: 9px 18px; border-radius: 999px; font-weight: 600; cursor: pointer; font-size: 14px; color: var(--text-main); transition: all 0.2s; position: relative; }
+        .nav-btn:hover { background: var(--surface-subtle); }
+        .nav-btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 700;
+    }
+         
+
+        /* Bouton de connexion redimensionné et élégant */
+        .nav-btn.login-btn { background: var(--primary); color: #fff; border-color: var(--primary); padding: 9px 20px; font-weight: 700; }
+        .nav-btn.login-btn:hover { background: #1e293b; }
+
+        .cart-badge { position: absolute; top: -6px; right: -6px; background: var(--coral); color: #fff; font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 999px; display: none; }
+
+        .view { display: none; padding: 32px; flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; animation: fadeIn 0.3s ease-in-out; }
+        .view.active { display: block; }
+        .view#view-auth.active { display: flex; padding: 0; max-width: none; height: 100vh; overflow: hidden; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .navigation-bar { display: flex; gap: 10px; margin-bottom: 24px; }
+
+        /* ACCUEIL : ANIMATION CROISÉE EN LARGEUR ET HAUTEUR AU SURVOL */
+        .home-split-container { display: flex; gap: 24px; align-items: center; min-height: 75vh; margin-bottom: 30px; }
+        .split-card { flex: 1; height: 500px; border-radius: 28px; padding: 50px; display: flex; flex-direction: column; justify-content: flex-end; position: relative; overflow: hidden; cursor: pointer; background-size: cover; background-position: center; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: flex 0.5s cubic-bezier(0.16, 1, 0.3, 1), height 0.5s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease; }
+        
+        .home-split-container:hover .split-card { flex: 0.8; height: 440px; filter: brightness(0.85); }
+        .home-split-container .split-card:hover { flex: 1.6; height: 560px; filter: brightness(1); z-index: 2; }
+
+        .split-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.2) 60%, rgba(15,23,42,0.05) 100%); z-index: 1; }
+        .split-card > * { position: relative; z-index: 2; color: #fff; }
+        .split-card.card-booking { background-image: url('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=1200&q=80'); }
+        .split-card.card-shop { background-image: url('https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=1200&q=80'); }
+        .split-card h2 { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 42px; font-weight: 800; margin-bottom: 12px; letter-spacing: -1px; }
+        .split-card p { font-size: 16px; margin-bottom: 28px; opacity: 0.9; max-width: 38ch; line-height: 1.5; }
+        .btn-split { background: #fff; color: var(--primary); border: none; padding: 14px 28px; border-radius: 999px; font-weight: 700; font-size: 15px; cursor: pointer; transition: transform 0.2s, background 0.2s; width: fit-content; }
+        .btn-split:hover { background: var(--accent); color: #fff; transform: scale(1.03); }
+
+        /* VUE AUTH DIVISEE PAR DEUX PLEIN ECRAN */
+        .auth-wrapper { display: grid; grid-template-columns: 1fr 1fr; width: 100%; height: 100vh; background: var(--surface); }
+        .auth-image-side { background-image: url('https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; position: relative; }
+        .auth-image-side::before { content: ''; position: absolute; inset: 0; background: rgba(15, 23, 42, 0.4); }
+        .auth-form-side { display: flex; flex-direction: column; justify-content: center; padding: 60px; max-width: 540px; margin: 0 auto; width: 100%; }
+        .auth-form-side h2 { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 34px; margin-bottom: 8px; color: var(--primary); }
+
+        .search-container { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 40px; max-width: 800px; margin: 20px auto; box-shadow: 0 4px 20px rgba(0,0,0,0.02); text-align: center; }
+        .search-container h2 { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 32px; margin-bottom: 8px; color: var(--primary); }
+        
+        .search-bar-modern { display: flex; gap: 10px; background: var(--bg-body); border: 1px solid var(--border); border-radius: 999px; padding: 8px 16px; margin: 24px 0; align-items: center; }
+        .search-bar-modern input { flex: 1; border: none; background: transparent; padding: 8px; font-size: 16px; outline: none; color: var(--text-main); }
+        
+        .cities-grid-quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; text-align: left; }
+        .city-pill-card { background: var(--bg-body); border: 1px solid var(--border); padding: 12px; border-radius: 14px; cursor: pointer; transition: all 0.2s; font-weight: 600; font-size: 14px; text-align: center; }
+        .city-pill-card:hover { border-color: var(--accent); background: #eff6ff; color: var(--accent); }
+
+        .sport-selector-row { display: flex; gap: 10px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
+        .sport-select-pill { background: var(--bg-body); border: 1px solid var(--border); padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+        .sport-select-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; background: var(--surface); padding: 16px 24px; border-radius: 16px; border: 1px solid var(--border); }
+        .quick-change-bar { display: flex; gap: 10px; align-items: center; }
+        .quick-change-bar input, .quick-change-bar select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-body); font-weight: 600; font-size: 13px; outline: none; }
+
+        .content-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; height: 600px; }
+        #map { border-radius: 20px; width: 100%; height: 100%; border: 1px solid var(--border); z-index: 10; }
+        .list-box { display: flex; flex-direction: column; gap: 12px; height: 100%; overflow-y: auto; padding-right: 4px; }
+        
+        .complex-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; gap: 16px; align-items: flex-start; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .complex-img { width: 100px; height: 100px; border-radius: 12px; object-fit: cover; background: var(--surface-subtle); flex-shrink: 0; }
+        .complex-info { flex: 1; }
+        .slots-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; max-height: 80px; overflow-y: auto; }
+        .slot-pill { background: var(--surface-subtle); border: 1px solid var(--border); padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .slot-pill:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        .shop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+        .shop-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+        .shop-chip { border: 1px solid var(--border); background: var(--surface); padding: 8px 16px; border-radius: 999px; font-weight: 600; cursor: pointer; color: var(--text-muted); font-size: 14px; }
+        .shop-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .product-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .product-info { padding: 16px; display: flex; flex-direction: column; flex: 1; justify-content: space-between; }
+        .product-info h4 { font-size: 15px; margin-bottom: 4px; }
+        .product-info p { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+        .product-price { font-weight: 800; color: var(--accent); font-size: 17px; margin: 4px 0; }
+
+        .cart-container, .checkout-container { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 32px; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; color: var(--text-muted); }
+        .form-group input, .form-group select { width: 100%; padding: 12px 16px; background: var(--bg-body); border: 1px solid var(--border); border-radius: 12px; font-size: 15px; color: var(--text-main); outline: none; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
+        .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; width: 100%; max-width: 580px; padding: 32px; position: relative; max-height: 90vh; overflow-y: auto; }
+        .shop-item { border: 1px solid var(--border); background: var(--bg-body); border-radius: 14px; padding: 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 8px; }
+        .shop-item.selected { border-color: var(--coral); background: #fff1f2; }
+        .close-modal { position: absolute; top: 20px; right: 20px; border: none; background: transparent; font-size: 22px; cursor: pointer; color: var(--text-muted); }
+
+        footer { background: var(--surface); border-top: 1px solid var(--border); padding: 40px 32px; margin-top: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; font-size: 14px; color: var(--text-muted); }
+        footer h4 { font-family: 'Bricolage Grotesque', Arial, sans-serif; color: var(--primary); font-size: 16px; margin-bottom: 14px; }
+        footer ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        footer a { color: inherit; text-decoration: none; cursor: pointer; }
+
+        @media(max-width: 768px) { .home-split-container, .content-grid, .form-grid, .cities-grid-quick, .auth-wrapper { grid-template-columns: 1fr; height: auto; } .auth-image-side { display: none; } }
+    </style>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header id="main-header">
+        <div class="header-left">
+            <div class="logo" onclick="switchView('home')">PLAY<span>GROUND</span></div>
+        </div>
+        <div class="nav-links">
+            <button class="nav-btn" onclick="switchView('city-choice')">📅 Réserver</button>
+            <button class="nav-btn" onclick="switchView('shop')">🛍️ Boutique</button>
+            <button class="nav-btn" onclick="switchView('cart')" style="display: flex; align-items: center; gap: 6px;">
+                🛒 Panier <span class="cart-badge" id="cart-counter">0</span>
+            </button>
+            <button class="nav-btn primary" onclick="switchView('pro')">Espace Pro</button>
+            <span id="user-display" style="font-weight: 700; font-size: 14px; color: var(--accent); margin-left: 8px; display: none;"></span>
+            <button class="nav-btn login-btn" id="login-nav-btn" onclick="switchView('auth')">Connexion</button>
+        </div>
+    </header>
+
+    <!-- VUE 1 : ACCUEIL -->
+    <div id="view-home" class="view active">
+        <div class="home-split-container">
+            <div class="split-card card-booking" onclick="switchView('city-choice')">
+                <div>
+                    <h2>Réserver un terrain</h2>
+                    <p>Trouvez vos terrains de Padel, Pickleball et Foot en salle parmi notre réseau national de complexes.</p>
+                    <button class="btn-split">Réserver un terrain →</button>
+                </div>
+            </div>
+            <div class="split-card card-shop" onclick="switchView('shop')">
+                <div>
+                    <h2>Accès à la boutique</h2>
+                    <p>Équipez-vous avec notre catalogue complet : raquettes, balles, chaussures et accessoires au meilleur prix.</p>
+                    <button class="btn-split">Voir la boutique →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VUE AUTH : FAUSSE PAGE DE CONNEXION / INSCRIPTION -->
+    <div id="view-auth" class="view">
+        <div class="auth-wrapper">
+            <div class="auth-image-side"></div>
+            <div class="auth-form-side">
+                <div style="margin-bottom: 24px;">
+                    <div class="logo" onclick="switchView('home')" style="display: inline-block; cursor: pointer;">PLAY<span>GROUND</span></div>
+                </div>
+                <h2>Connexion / Inscription</h2>
+                <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 24px;">Accédez à votre compte Playground pour retrouver vos réservations.</p>
+                <form onsubmit="event.preventDefault(); handleLogin();">
+                    <div class="form-group">
+                        <label>Adresse e-mail</label>
+                        <input type="email" id="auth-email" placeholder="enzo.valero@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mot de passe</label>
+                        <input type="password" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-action" style="width: 100%; margin-top: 10px; height: 40px;">Se connecter / S'inscrire</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- VUE 2A : RECHERCHE VILLE ET SPORT -->
+    <div id="view-city-choice" class="view">
+        <div class="navigation-bar">
+            <button class="back-btn" onclick="switchView('home')">← Retour</button>
+        </div>
+        <div class="search-container">
+            <h2>Où souhaitez-vous jouer ?</h2>
+            <p style="color: var(--text-muted); font-size: 14px;">Sélectionnez une ville ou tapez votre recherche ci-dessous.</p>
+            
+            <div class="search-bar-modern">
+                <span style="padding-left: 8px;">🔍</span>
+                <input type="text" id="city-search-input" placeholder="Ex: Paris, Nantes, Lyon, Bordeaux, Toulouse...">
+                <button class="btn-action" style="padding: 10px 20px; font-size: 14px;" onclick="searchTypedCity()">Rechercher</button>
+            </div>
+
+            <p style="font-weight: 600; font-size: 13px; color: var(--text-muted); text-align: left; margin-top: 16px;">Villes populaires :</p>
+            <div class="cities-grid-quick">
+                <div class="city-pill-card" onclick="selectCityQuick('Paris')">Paris</div>
+                <div class="city-pill-card" onclick="selectCityQuick('Nantes')">Nantes</div>
+                <div class="city-pill-card" onclick="selectCityQuick('Lyon')">Lyon</div>
+                <div class="city-pill-card" onclick="selectCityQuick('Marseille')">Marseille</div>
+                <div class="city-pill-card" onclick="selectCityQuick('Bordeaux')">Bordeaux</div>
+                <div class="city-pill-card" onclick="selectCityQuick('Toulouse')">Toulouse</div>
+                <div class="city-pill-card" onclick="selectCityQuick('Rennes')">Rennes</div>
+                <div class="city-pill-card" onclick="selectCityQuick('Lille')">Lille</div>
+                <div class="city-pill-card" onclick="selectCityQuick('Montpellier')">Montpellier</div>
+                <div class="city-pill-card" onclick="selectCityQuick('Strasbourg')">Strasbourg</div>
+                <div class="city-pill-card" onclick="selectCityQuick('Nice')">Nice</div>
+                <div class="city-pill-card" onclick="selectCityQuick('Le Mans')">Le Mans</div>
+            </div>
+
+            <p style="font-weight: 600; font-size: 13px; color: var(--text-muted); text-align: left; margin-top: 24px;">Filtrer par sport :</p>
+            <div class="sport-selector-row" id="initial-sport-selector">
+                <div class="sport-select-pill active" onclick="setInitialSport('all', this)">Tous les sports</div>
+                <div class="sport-select-pill" onclick="setInitialSport('Padel', this)">Padel</div>
+                <div class="sport-select-pill" onclick="setInitialSport('Pickleball', this)">Pickleball</div>
+                <div class="sport-select-pill" onclick="setInitialSport('Foot à 5', this)">Foot à 5</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VUE 2B : RESULTATS VILLE -->
+    <div id="view-results" class="view">
+        <div class="navigation-bar">
+            <button class="back-btn" onclick="switchView('city-choice')">← Retour au choix de ville</button>
+        </div>
+        <div class="results-header">
+            <div>
+                <h2 id="results-title" style="font-family:'Bricolage Grotesque', Arial, sans-serif; font-size:22px; color:var(--primary);">Complexes</h2>
+            </div>
+            <div class="quick-change-bar">
+                <input type="text" id="quick-city-input" placeholder="Changer de ville...">
+                <button class="nav-btn primary" style="padding: 8px 14px; font-size: 13px;" onclick="quickUpdateCity()">OK</button>
+                <select id="quick-sport-select" onchange="quickUpdateSport()">
+                    <option value="all">Tous les sports</option>
+                    <option value="Padel">Padel</option>
+                    <option value="Pickleball">Pickleball</option>
+                    <option value="Foot à 5">Foot à 5</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div id="map"></div>
+            <div class="list-box" id="results-list"></div>
+        </div>
+    </div>
+
+    <!-- VUE 3 : BOUTIQUE -->
+    <div id="view-shop" class="view">
+        <div class="navigation-bar">
+            <button class="back-btn" onclick="switchView('home')">← Retour</button>
+        </div>
+        <div class="shop-header">
+            <h2>Boutique Playground</h2>
+            <div style="width: 280px;">
+                <input type="text" id="shop-search" placeholder="Rechercher un article..." oninput="filterShopProducts()" style="width:100%; padding:10px 16px; border:1px solid var(--border); border-radius:999px; outline:none; font-size:14px; background:var(--surface);">
+            </div>
+        </div>
+        <div class="shop-filters" id="shop-filters-bar">
+            <button class="shop-chip active" onclick="filterShopCategory('all', this)">Tous</button>
+        </div>
+        <div class="product-grid" id="product-grid"></div>
+    </div>
+
+    <!-- VUE 4 : PANIER -->
+    <div id="view-cart" class="view">
+        <div class="navigation-bar">
+            <button class="back-btn" onclick="switchView('shop')">← Retour</button>
+        </div>
+        <div class="cart-container">
+            <h2 style="font-family:'Bricolage Grotesque', Arial, sans-serif; font-size:30px; margin-bottom:8px;">Votre Panier</h2>
+            <p style="color: var(--text-muted); margin-bottom:24px; font-size: 14px;">Retrouvez vos réservations de terrains et articles sélectionnés.</p>
+            
+            <div id="cart-items-list"></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
+                <span style="font-size: 18px; font-weight: 700;">Total : <span id="cart-total" style="color: var(--accent);">0.00 €</span></span>
+                <div style="display: flex; gap: 12px;">
+                    <button class="nav-btn" onclick="switchView('shop')">Continuer mes achats</button>
+                    <button class="btn-action" onclick="goToCheckout()">Passer commande</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VUE 5 : CHECKOUT CLIENT -->
+    <div id="view-checkout" class="view">
+        <div class="navigation-bar">
+            <button class="back-btn" onclick="switchView('cart')">← Retour au panier</button>
+        </div>
+        <div class="checkout-container">
+            <h2 style="font-family:'Bricolage Grotesque', Arial, sans-serif; font-size:30px; margin-bottom:8px;">Validation de votre commande</h2>
+            <p style="color: var(--text-muted); margin-bottom:24px; font-size: 14px;">Remplissez vos informations pour finaliser votre réservation et vos achats.</p>
+            
+            <form onsubmit="event.preventDefault(); finalizeOrder();">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Prénom</label>
+                        <input type="text" placeholder="Enzo" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nom</label>
+                        <input type="text" placeholder="Valero" required>
+                    </div>
+                    <div class="form-group full">
+                        <label>Adresse e-mail</label>
+                        <input type="email" placeholder="enzo.valero@email.com" required>
+                    </div>
+                    <div class="form-group full">
+                        <label>Téléphone</label>
+                        <input type="tel" placeholder="06 12 34 56 78" required>
+                    </div>
+                    <div class="form-group full">
+                        <label>Adresse postale</label>
+                        <input type="text" placeholder="12 rue de la République" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Ville</label>
+                        <input type="text" placeholder="Nantes" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Code Postal</label>
+                        <input type="text" placeholder="44000" required>
+                    </div>
+                    <div class="form-group full">
+                        <label>Mode de paiement</label>
+                        <select>
+                            <option>Carte Bancaire (Visa / Mastercard / CB)</option>
+                            <option>Apple Pay / Google Pay</option>
+                            <option>Paiement sur place au complexe</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px;">
+                    <button type="button" class="nav-btn" onclick="switchView('cart')">← Retour</button>
+                    <button type="submit" class="btn-action" style="padding: 14px 32px;">Payer et valider ma commande</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VUE 6 : ESPACE PRO -->
+    <div id="view-pro" class="view">
+        <div class="navigation-bar">
+            <button class="back-btn" onclick="switchView('home')">← Retour</button>
+        </div>
+        <div class="checkout-container" style="max-width:700px;">
+            <h2 style="font-family:'Bricolage Grotesque', Arial, sans-serif; font-size:26px; margin-bottom:8px;">Espace Partenaire Pro</h2>
+            <p style="color: var(--text-muted); margin-bottom:24px; font-size: 14px;">Référencez votre complexe et boostez vos réservations sur Playground.</p>
+            <form onsubmit="event.preventDefault(); alert('Établissement enregistré avec succès !'); switchView('home');">
+                <div class="form-group">
+                    <label>Nom du complexe</label>
+                    <input type="text" placeholder="Ex: Court Yard" required>
+                </div>
+                <div class="form-group">
+                    <label>Ville</label>
+                    <input type="text" placeholder="Ex: Nantes" required>
+                </div>
+                <div class="form-group">
+                    <label>Sport principal</label>
+                    <select>
+                        <option>Padel</option>
+                        <option>Pickleball</option>
+                        <option>Foot à 5</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tarif horaire moyen (€)</label>
+                    <input type="number" placeholder="Ex: 35" required>
+                </div>
+                <button type="submit" class="btn-action" style="width:100%; margin-top: 10px;">Soumettre mon établissement</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODALE CROSS-SELLING -->
+    <div class="modal-overlay" id="booking-modal">
+        <div class="modal">
+            <button class="close-modal" onclick="closeModal()">×</button>
+            <h3>Personnalisez votre session</h3>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom:16px;" id="modal-subtitle">Sélectionnez vos options :</p>
+            
+            <div id="cross-sell-items"></div>
+
+            <div style="background: var(--bg-body); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin: 16px 0; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <b style="font-size: 13px;">Besoin d'autre matériel ?</b>
+                    <p style="font-size: 11px; color: var(--text-muted);">Explorez la boutique et ajoutez des articles.</p>
+                </div>
+                <button class="nav-btn" onclick="redirectToShopFromModal()" style="background: var(--surface);">Boutique →</button>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="nav-btn" style="flex:1; padding:12px;" onclick="closeModal()">Annuler</button>
+                <button class="btn-action" style="flex:2; padding:12px; font-size:14px;" onclick="confirmAndAddToCart()">Ajouter au panier</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer id="main-footer">
+        <div>
+            <h4>Playground ⚡</h4>
+            <p>La référence de la réservation de terrains indoor et de l'équipement sportif en France.</p>
+        </div>
+        <div>
+            <h4>Navigation</h4>
+            <ul>
+                <li><a onclick="switchView('city-choice')">📅 Réserver un terrain</a></li>
+                <li><a onclick="switchView('shop')">🛍️ Boutique en ligne</a></li>
+                <li><a onclick="switchView('pro')">Espace Pro (Gérants)</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Informations légales</h4>
+            <ul>
+                <li><a onclick="alert('CGV Playground...')">CGV & Conditions</a></li>
+                <li><a onclick="alert('Politique de confidentialité.')">Confidentialité</a></li>
+                <li><a onclick="alert('Mentions légales Playground SAS.')">Mentions légales</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4>Support</h4>
+            <ul>
+                <li><a onclick="alert('Contact : contact@playground-sport.fr')">Contactez-nous</a></li>
+                <li><a onclick="alert('Consultation de la FAQ.')">FAQ</a></li>
+                <li><a onclick="alert('Rejoignez notre équipe !')">Recrutement</a></li>
+            </ul>
+        </div>
+    </footer>
+
+    <script>
+        const complexesData = [
+            { nom: "Padel Albertville", ville: "Albertville", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 45.67, lon: 6.39, prix: 35 },
+            { nom: "UrbanSoccer Clermont-Aubière", ville: "Aubière", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 45.76, lon: 3.12, prix: 48 },
+            { nom: "LE FIVE Clermont-Ferrand", ville: "Clermont-Ferrand", activites: "Foot à 5", reseau: "LE FIVE / Groupe Players", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 45.77, lon: 3.08, prix: 48 },
+            { nom: "Squash & Padel Lyon Craponne", ville: "Craponne", activites: "Squash, Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 45.74, lon: 4.73, prix: 38 },
+            { nom: "UrbanPadel Lyon Dardilly", ville: "Dardilly", activites: "Padel", reseau: "UrbanPadel / UrbanSoccer", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 45.82, lon: 4.76, prix: 40 },
+            { nom: "4PADEL Grenoble", ville: "Grenoble", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 45.18, lon: 5.72, prix: 38 },
+            { nom: "Le Puy Padel", ville: "Le Puy-en-Velay", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 45.04, lon: 3.88, prix: 34 },
+            { nom: "Padel Barolles", ville: "Saint-Genis-Laval", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 45.70, lon: 4.78, prix: 36 },
+            { nom: "Esprit Padel Saint-Priest", ville: "Saint-Priest", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 45.69, lon: 4.90, prix: 38 },
+            { nom: "UrbanPadel Saint-Étienne", ville: "Saint-Étienne", activites: "Padel", reseau: "UrbanPadel / UrbanSoccer", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 45.43, lon: 4.38, prix: 36 },
+            { nom: "Le Five Saint-Étienne", ville: "Saint-Étienne", activites: "Foot à 5", reseau: "LE FIVE / Groupe Players", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 45.44, lon: 4.39, prix: 45 },
+            { nom: "Padel Chambéry Voglans", ville: "Voglans", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 45.62, lon: 5.90, prix: 35 },
+            { nom: "All In Padel Lyon Parilly", ville: "Vénissieux / Lyon-Parilly", activites: "Padel", reseau: "All In Padel", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 45.70, lon: 4.88, prix: 42 },
+            { nom: "UrbanSoccer Montbéliard Allenjoie", ville: "Allenjoie", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 47.51, lon: 6.84, prix: 45 },
+            { nom: "Padel Auxerre", ville: "Auxerre", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 47.79, lon: 3.56, prix: 34 },
+            { nom: "UrbanSoccer Chalon-sur-Saône Champforgeuil", ville: "Champforgeuil", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 46.82, lon: 4.83, prix: 45 },
+            { nom: "UrbanSoccer Dijon", ville: "Dijon", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 47.32, lon: 5.04, prix: 48 },
+            { nom: "Padel Dijon", ville: "Dijon", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 47.33, lon: 5.03, prix: 38 },
+            { nom: "PadelShot Rennes Chantepie", ville: "Chantepie", activites: "Padel", reseau: "PadelShot", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 48.09, lon: -1.63, prix: 36 },
+            { nom: "UrbanSoccer Rennes Cap Malo", ville: "La Mézière / Cap Malo", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.20, lon: -1.72, prix: 48 },
+            { nom: "LE FIVE Rennes", ville: "Rennes", activites: "Foot à 5", reseau: "LE FIVE / Groupe Players", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.11, lon: -1.67, prix: 46 },
+            { nom: "UrbanPadel Vern-sur-Seiche", ville: "Vern-sur-Seiche", activites: "Padel", reseau: "UrbanPadel / UrbanSoccer", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 48.05, lon: -1.60, prix: 36 },
+            { nom: "UrbanSoccer Blois", ville: "Blois", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 47.59, lon: 1.33, prix: 45 },
+            { nom: "UrbanSoccer Chartres", ville: "Chartres", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.44, lon: 1.48, prix: 45 },
+            { nom: "UrbanSoccer Orléans Fleury", ville: "Fleury-les-Aubrais", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 47.93, lon: 1.91, prix: 48 },
+            { nom: "4PADEL Ingré", ville: "Ingré", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 47.92, lon: 1.83, prix: 38 },
+            { nom: "UrbanSoccer Tours La Ville-aux-Dames", ville: "La Ville-aux-Dames", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 47.39, lon: 0.78, prix: 48 },
+            { nom: "4PADEL Tours", ville: "Tours / agglomération", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 47.39, lon: 0.68, prix: 38 },
+            { nom: "Padel Bastia", ville: "Bastia", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 42.70, lon: 9.45, prix: 36 },
+            { nom: "4PADEL Strasbourg Eckbolsheim", ville: "Eckbolsheim", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 48.57, lon: 7.69, prix: 38 },
+            { nom: "Padel Kingersheim", ville: "Kingersheim", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 47.81, lon: 7.31, prix: 35 },
+            { nom: "UrbanSoccer Metz", ville: "Metz", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 49.11, lon: 6.17, prix: 48 },
+            { nom: "4PADEL Metz", ville: "Metz / agglomération", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 49.12, lon: 6.18, prix: 38 },
+            { nom: "UrbanSoccer Mulhouse Wittenheim", ville: "Wittenheim / Mulhouse", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 47.80, lon: 7.33, prix: 48 },
+            { nom: "UrbanSoccer Nancy", ville: "Nancy", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.69, lon: 6.18, prix: 48 },
+            { nom: "4PADEL Reims", ville: "Reims", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 49.25, lon: 4.03, prix: 38 },
+            { nom: "Padel Saint-Louis", ville: "Saint-Louis", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 47.58, lon: 7.55, prix: 36 },
+            { nom: "UrbanSoccer Strasbourg", ville: "Strasbourg / Eurométropole", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.57, lon: 7.75, prix: 48 },
+            { nom: "UrbanSoccer Lille Woippy", ville: "Woippy", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 49.15, lon: 6.15, prix: 48 },
+            { nom: "UrbanSoccer Amiens", ville: "Amiens", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 49.89, lon: 2.29, prix: 45 },
+            { nom: "Padel Beauvais", ville: "Beauvais", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 49.42, lon: 2.08, prix: 35 },
+            { nom: "UrbanSoccer Lille Bondues", ville: "Bondues", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 50.71, lon: 3.08, prix: 48 },
+            { nom: "UrbanSoccer Compiègne", ville: "Compiègne", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 49.41, lon: 2.82, prix: 45 },
+            { nom: "Padel Dunkerque", ville: "Dunkerque", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 51.03, lon: 2.37, prix: 36 },
+            { nom: "UrbanPadel Lille Lezennes", ville: "Lezennes", activites: "Padel", reseau: "UrbanPadel / UrbanSoccer", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 50.61, lon: 3.10, prix: 38 },
+            { nom: "LE FIVE Hellemmes (Lille)", ville: "Lille / secteur Hellemmes", activites: "Foot à 5", reseau: "LE FIVE / Groupe Players", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 50.62, lon: 3.10, prix: 48 },
+            { nom: "UrbanSoccer Liévin", ville: "Liévin", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 50.42, lon: 2.77, prix: 45 },
+            { nom: "4PADEL Marcq-en-Barœul", ville: "Marcq-en-Barœul", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 50.67, lon: 3.08, prix: 40 },
+            { nom: "UrbanSoccer Ronchin", ville: "Ronchin", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 50.60, lon: 3.08, prix: 48 },
+            { nom: "4PADEL Valenciennes", ville: "Valenciennes", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 50.35, lon: 3.52, prix: 38 },
+            { nom: "UrbanSoccer Villeneuve-d’Ascq", ville: "Villeneuve-d’Ascq", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 50.62, lon: 3.14, prix: 48 },
+            { nom: "Padel Barentin", ville: "Barentin", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 49.54, lon: 0.95, prix: 34 },
+            { nom: "Padel Bolbec", ville: "Bolbec", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 49.57, lon: 0.40, prix: 34 },
+            { nom: "UrbanSoccer Rouen Le Petit-Quevilly", ville: "Le Petit-Quevilly", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 49.43, lon: 1.07, prix: 48 },
+            { nom: "UrbanSoccer Caen Mondeville", ville: "Mondeville", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 49.17, lon: -0.31, prix: 48 },
+            { nom: "4PADEL Rouen", ville: "Rouen / agglomération", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 49.44, lon: 1.09, prix: 38 },
+            { nom: "4PADEL Bordeaux", ville: "Bordeaux", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 44.83, lon: -0.57, prix: 38 },
+            { nom: "Big Padel Bordeaux Mérignac", ville: "Mérignac", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 44.84, lon: -0.68, prix: 40 },
+            { nom: "UrbanSoccer Bordeaux", ville: "Bordeaux / Mérignac", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 44.84, lon: -0.65, prix: 48 },
+            { nom: "UrbanSoccer Carbon-Blanc", ville: "Carbon-Blanc", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 44.88, lon: -0.51, prix: 48 },
+            { nom: "UrbanSoccer Poitiers Fontaine-le-Comte", ville: "Fontaine-le-Comte", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 46.55, lon: 0.25, prix: 45 },
+            { nom: "Padel Lescar", ville: "Lescar", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 43.31, lon: -0.44, prix: 36 },
+            { nom: "Padel Limoges", ville: "Limoges", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 45.83, lon: 1.26, prix: 36 },
+            { nom: "4PADEL Pau", ville: "Pau / agglomération", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 43.30, lon: -0.37, prix: 38 },
+            { nom: "UrbanSoccer Pessac", ville: "Pessac", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 44.80, lon: -0.63, prix: 48 },
+            { nom: "Périgny Padel La Rochelle", ville: "Périgny / La Rochelle", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 46.15, lon: -1.09, prix: 38 },
+            { nom: "Padel Béziers", ville: "Béziers", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 43.34, lon: 3.21, prix: 35 },
+            { nom: "Padel Montauban", ville: "Montauban", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 44.01, lon: 1.35, prix: 35 },
+            { nom: "UrbanSoccer Montpellier Castelnau", ville: "Montpellier", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 43.61, lon: 3.89, prix: 48 },
+            { nom: "Padel Tolosa Montpellier", ville: "Montpellier", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 43.60, lon: 3.88, prix: 38 },
+            { nom: "Padel Perpignan", ville: "Perpignan", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 42.69, lon: 2.89, prix: 36 },
+            { nom: "Toulouse Padel Club", ville: "Toulouse", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 43.60, lon: 1.44, prix: 36 },
+            { nom: "4PADEL Colomiers (Toulouse)", ville: "Toulouse / agglomération", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 43.61, lon: 1.33, prix: 38 },
+            { nom: "UrbanSoccer Toulouse", ville: "Toulouse", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 43.60, lon: 1.42, prix: 48 },
+            { nom: "UrbanSoccer Angers", ville: "Angers", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 47.47, lon: -0.55, prix: 45 },
+            { nom: "UrbanPadel Nantes-Carquefou", ville: "Carquefou", activites: "Padel", reseau: "UrbanPadel / UrbanSoccer", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 47.29, lon: -1.49, prix: 36 },
+            { nom: "Padel Challans", ville: "Challans", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 46.84, lon: -1.87, prix: 34 },
+            { nom: "Padel Le Mans Coulans", ville: "Coulans-sur-Gée", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 48.05, lon: 0.04, prix: 34 },
+            { nom: "UrbanSoccer Le Mans", ville: "Le Mans", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.00, lon: 0.19, prix: 45 },
+            { nom: "Palarea Le Mans", ville: "Le Mans", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 48.03, lon: 0.18, prix: 34 },
+            { nom: "Court Yard Saint-Herblain", ville: "Saint-Herblain", activites: "Padel, Pickleball", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 47.22, lon: -1.62, prix: 34 },
+            { nom: "Padel Saint-Pavace", ville: "Saint-Pavace", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 48.03, lon: 0.20, prix: 34 },
+            { nom: "UrbanSoccer Nantes Saint-Sébastien", ville: "Saint-Sébastien-sur-Loire", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 47.19, lon: -1.52, prix: 48 },
+            { nom: "Padel Sautron", ville: "Sautron", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 47.26, lon: -1.68, prix: 34 },
+            { nom: "UrbanSoccer Aix-en-Provence", ville: "Aix-en-Provence", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 43.52, lon: 5.44, prix: 48 },
+            { nom: "UrbanSoccer Avignon", ville: "Avignon", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 43.94, lon: 4.80, prix: 45 },
+            { nom: "Padel Bouc-Bel-Air", ville: "Bouc-Bel-Air", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 43.45, lon: 5.42, prix: 38 },
+            { nom: "4PADEL Cabriès", ville: "Cabriès", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 43.43, lon: 5.38, prix: 40 },
+            { nom: "Padel Cannes", ville: "Cannes", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 43.55, lon: 7.01, prix: 42 },
+            { nom: "Padel Grasse", ville: "Grasse", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 43.65, lon: 6.92, prix: 38 },
+            { nom: "CAP 7 Padel Marseille", ville: "Marseille", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 43.29, lon: 5.36, prix: 38 },
+            { nom: "UrbanSoccer Marseille", ville: "Marseille", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 43.27, lon: 5.41, prix: 48 },
+            { nom: "Padel Villeneuve-Loubet", ville: "Villeneuve-Loubet", activites: "Padel", reseau: "Indépendant", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 43.62, lon: 7.12, prix: 40 },
+            { nom: "UrbanSoccer Antony", ville: "Antony", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.75, lon: 2.30, prix: 50 },
+            { nom: "UrbanSoccer Argenteuil", ville: "Argenteuil", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.94, lon: 2.25, prix: 50 },
+            { nom: "UrbanSoccer Asnières-sur-Seine", ville: "Asnières-sur-Seine", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.91, lon: 2.28, prix: 52 },
+            { nom: "UrbanSoccer Athis-Mons", ville: "Athis-Mons", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.70, lon: 2.38, prix: 48 },
+            { nom: "UrbanSoccer Aubervilliers", ville: "Aubervilliers", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.90, lon: 2.37, prix: 55 },
+            { nom: "UrbanSoccer Bezons", ville: "Bezons", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.92, lon: 2.21, prix: 48 },
+            { nom: "UrbanSoccer Bobigny", ville: "Bobigny", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.90, lon: 2.44, prix: 50 },
+            { nom: "UrbanSoccer Bondy", ville: "Bondy", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.90, lon: 2.48, prix: 50 },
+            { nom: "4PADEL Boulogne-Billancourt", ville: "Boulogne-Billancourt", activites: "Padel", reseau: "4PADEL / LE FIVE", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 48.83, lon: 2.24, prix: 44 },
+            { nom: "UrbanSoccer Carrières-sous-Poissy", ville: "Carrières-sous-Poissy", activites: "Foot à 5", reseau: "UrbanSoccer", img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=300&q=80", lat: 48.94, lon: 2.03, prix: 48 },
+            { nom: "Casa Padel Saint-Denis", ville: "Saint-Denis", activites: "Padel", reseau: "Casa Padel", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 48.92, lon: 2.35, prix: 40 }
+        ];
+
+        // Catalogue boutique complet (extrait du fichier Excel)
+        const boutiqueProducts = [
+            { id: 1, name: "Raquette padel débutant", cat: "Padel", price: 39.99, desc: "Débuter avec une raquette tolérante." },
+            { id: 2, name: "Raquette padel polyvalente", cat: "Padel", price: 69.99, desc: "Équilibre entre contrôle et puissance." },
+            { id: 3, name: "Raquette padel contrôle", cat: "Padel", price: 89.99, desc: "Forme ronde et contrôle facilité." },
+            { id: 4, name: "Raquette padel puissance", cat: "Padel", price: 119.99, desc: "Forme diamant pour smashs percutants." },
+            { id: 5, name: "Balles padel x3", cat: "Padel", price: 6.99, desc: "Boîte de 3 balles haute pression." },
+            { id: 6, name: "Raquette pickleball composite", cat: "Pickleball", price: 49.99, desc: "Surface composite et cœur polymère." },
+            { id: 7, name: "Balles pickleball indoor x4", cat: "Pickleball", price: 12.99, desc: "Homologuées USAPA." },
+            { id: 8, name: "Ballon foot en salle pro", cat: "Foot à 5", price: 39.99, desc: "Rebond contrôlé et résistance indoor." },
+            { id: 9, name: "Chasubles d'entraînement x10", cat: "Foot à 5", price: 29.99, desc: "Marquage équipes fluo." },
+            { id: 10, name: "Chaussures indoor padel/foot", cat: "Vêtements et accessoires", price: 79.99, desc: "Semelle non-marquante multi-surfaces." },
+            { id: 11, name: "Short technique respirant", cat: "Vêtements et accessoires", price: 24.99, desc: "Léger avec poches latérales." },
+            { id: 12, name: "T-shirt technique performance", cat: "Vêtements et accessoires", price: 22.99, desc: "Anti-transpiration haute respirabilité." },
+            { id: 13, name: "Gourde sport inox 750ml", cat: "Entraînement et récupération", price: 18.99, desc: "Double paroi isotherme." },
+            { id: 14, name: "Rouleau de massage foam roller", cat: "Entraînement et récupération", price: 21.99, desc: "Récupération musculaire et mobilité." }
+        ];
+
+        let currentCity = "nantes";
+        let currentSport = "all";
+        let map = null;
+        let markersLayer = null;
+        let selectedBookingTemp = null;
+        let cart = [];
+        let currentUser = null;
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            window.scrollTo(0, 0);
+
+            // Gestion de l'affichage de la navbar et du footer (masqués sur la page auth)
+            const header = document.getElementById('main-header');
+            const footer = document.getElementById('main-footer');
+            if (viewId === 'auth') {
+                header.style.display = 'none';
+                footer.style.display = 'none';
+            } else {
+                header.style.display = 'flex';
+                footer.style.display = 'grid';
+            }
+
+            if(viewId === 'shop') renderShop(boutiqueProducts);
+            if(viewId === 'results') setTimeout(initMap, 100);
+            if(viewId === 'cart') renderCart();
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('auth-email').value.trim();
+            if(email) {
+                currentUser = email;
+                document.getElementById('user-display').innerText = currentUser;
+                document.getElementById('user-display').style.display = 'inline';
+                document.getElementById('login-nav-btn').style.display = 'none';
+                switchView('home');
+            }
+        }
+
+        function setInitialSport(sport, el) {
+            currentSport = sport;
+            document.querySelectorAll('#initial-sport-selector .sport-select-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function selectCityQuick(cityName) {
+            currentCity = cityName.toLowerCase();
+            switchView('results');
+            renderCityResults();
+        }
+
+        function searchTypedCity() {
+            const val = document.getElementById('city-search-input').value.trim();
+            if(val) {
+                currentCity = val.toLowerCase();
+                switchView('results');
+                renderCityResults();
+            } else {
+                alert("Veuillez entrer une ville.");
+            }
+        }
+
+        function quickUpdateCity() {
+            const val = document.getElementById('quick-city-input').value.trim();
+            if(val) {
+                currentCity = val.toLowerCase();
+                renderCityResults();
+            }
+        }
+
+        function quickUpdateSport() {
+            currentSport = document.getElementById('quick-sport-select').value;
+            renderCityResults();
+        }
+
+        function initMap() {
+            const matched = complexesData.filter(c => c.ville.toLowerCase().includes(currentCity) || c.nom.toLowerCase().includes(currentCity));
+            const centerLat = matched.length > 0 ? matched[0].lat : 46.6;
+            const centerLon = matched.length > 0 ? matched[0].lon : 1.8;
+
+            if(!map) {
+                map = L.map('map').setView([centerLat, centerLon], 10);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+            } else {
+                map.setView([centerLat, centerLon], 10);
+            }
+
+            if(markersLayer) map.removeLayer(markersLayer);
+
+            markersLayer = L.layerGroup();
+            let complexes = matched.length > 0 ? matched : complexesData;
+            if(currentSport !== 'all') {
+                complexes = complexes.filter(c => c.activites.toLowerCase().includes(currentSport.toLowerCase()));
+            }
+
+            complexes.forEach(c => {
+                const marker = L.marker([c.lat, c.lon]).addTo(markersLayer);
+                marker.bindPopup(`<b>${c.nom}</b><br>${c.activites} - ${c.prix}€/h`);
+            });
+            markersLayer.addTo(map);
+        }
+
+        function renderCityResults() {
+            const cityNameFormatted = currentCity.charAt(0).toUpperCase() + currentCity.slice(1);
+            document.getElementById('results-title').innerText = `Complexes à ${cityNameFormatted}`;
+            document.getElementById('quick-sport-select').value = currentSport;
+
+            let complexes = complexesData.filter(c => c.ville.toLowerCase().includes(currentCity) || c.nom.toLowerCase().includes(currentCity));
+            if(complexes.length === 0) {
+                complexes = complexesData;
+            }
+
+            if(currentSport !== 'all') {
+                complexes = complexes.filter(c => c.activites.toLowerCase().includes(currentSport.toLowerCase()));
+            }
+
+            const allSlots = ["08:00", "09:30", "11:00", "12:30", "14:00", "15:30", "17:00", "18:30", "20:00", "21:30"];
+
+            const listContainer = document.getElementById('results-list');
+            listContainer.innerHTML = complexes.length ? complexes.map(c => `
+                <div class="complex-card">
+                    <img src="${c.img}" class="complex-img" alt="Complexe">
+                    <div class="complex-info">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <b style="font-size:15px;">${c.nom}</b>
+                                <small style="color:var(--text-muted); display:block;">${c.activites} · Réseau : ${c.reseau} · ★ 4.9</small>
+                            </div>
+                            <div style="font-weight:800; color:var(--accent); font-size:16px; text-align:right;">${c.prix} €<small style="font-size:10px; display:block; color:var(--text-muted); font-weight:normal;">/ heure</small></div>
+                        </div>
+                        <p style="font-size:12px; font-weight:600; margin-top:8px; color:var(--text-muted);">Créneaux disponibles :</p>
+                        <div class="slots-row">
+                            ${allSlots.map(slot => `<div class="slot-pill" onclick="openCrossSell('${c.nom}', '${c.activites}',${c.prix}, '${slot}')">${slot}</div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '<p style="color:var(--text-muted); padding:20px;">Aucun complexe ne correspond à cette recherche.</p>';
+
+            if(map) initMap();
+        }
+
+        function openCrossSell(complexName, sport, price, slotTime) {
+            selectedBookingTemp = { complexName, sport, price, slotTime };
+            document.getElementById('modal-subtitle').innerText = `Créneau : ${slotTime} chez ${complexName} (${sport}). Équipez-vous :`;
+            const grid = document.getElementById('cross-sell-items');
+            
+            grid.innerHTML = `
+                <div class="shop-item" onclick="this.classList.toggle('selected')" data-name="Raquette padel débutant" data-price="39.99">
+                    <div><b>Raquette padel débutant</b><br><small style="color:var(--text-muted)">Idéal pour votre match</small></div>
+                    <span style="font-weight:800; color:var(--coral);">+ 39.99 €</span>
+                </div>
+                <div class="shop-item" onclick="this.classList.toggle('selected')" data-name="Balles padel x3" data-price="6.99">
+                    <div><b>Balles padel x3</b><br><small style="color:var(--text-muted)">Haute pression</small></div>
+                    <span style="font-weight:800; color:var(--coral);">+ 6.99 €</span>
+                </div>
+            `;
+            document.getElementById('booking-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('booking-modal').style.display = 'none';
+        }
+
+        function redirectToShopFromModal() {
+            closeModal();
+            switchView('shop');
+        }
+
+        function confirmAndAddToCart() {
+            cart.push({
+                type: 'terrain',
+                name: `Terrain ${selectedBookingTemp.sport} - ${selectedBookingTemp.complexName}`,
+                details: `Créneau : ${selectedBookingTemp.slotTime}`,
+                price: selectedBookingTemp.price
+            });
+
+            document.querySelectorAll('#cross-sell-items .shop-item.selected').forEach(el => {
+                cart.push({
+                    type: 'materiel',
+                    name: el.getAttribute('data-name'),
+                    details: 'Option terrain',
+                    price: parseFloat(el.getAttribute('data-price'))
+                });
+            });
+
+            closeModal();
+            updateCartBadge();
+            switchView('cart');
+        }
+
+        function addProductToCart(productId) {
+            const prod = boutiqueProducts.find(p => p.id === productId);
+            if(prod) {
+                cart.push({ type: 'boutique', name: prod.name, details: prod.cat, price: prod.price });
+                updateCartBadge();
+                alert(`${prod.name} a été ajouté à votre panier !`);
+            }
+        }
+
+        function updateCartBadge() {
+            const badge = document.getElementById('cart-counter');
+            badge.innerText = cart.length;
+            badge.style.display = cart.length > 0 ? 'inline-block' : 'none';
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-list');
+            let total = 0;
+
+            if(cart.length === 0) {
+                container.innerHTML = `<p style="color: var(--text-muted); padding: 20px 0;">Votre panier est vide pour le moment.</p>`;
+                document.getElementById('cart-total').innerText = "0.00 €";
+                return;
+            }
+
+            container.innerHTML = cart.map((item, index) => {
+                total += item.price;
+                return `
+                    <div class="cart-item">
+                        <div>
+                            <b>${item.name}</b>
+                            <small style="display: block; color: var(--text-muted);">${item.details}</small>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <span style="font-weight: 700; color: var(--accent);">${item.price.toFixed(2)} €</span>
+                            <button onclick="removeFromCart(${index})" style="background:none; border:none; color:var(--coral); cursor:pointer; font-weight:bold;">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('cart-total').innerText = total.toFixed(2) + " €";
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartBadge();
+            renderCart();
+        }
+
+        function goToCheckout() {
+            if(cart.length === 0) {
+                alert("Votre panier est vide.");
+                return;
+            }
+            switchView('checkout');
+        }
+
+        function finalizeOrder() {
+            alert('Commande validée avec succès ! Un e-mail de confirmation vous a été envoyé.');
+            cart = [];
+            updateCartBadge();
+            switchView('home');
+        }
+
+        function initShopFilters() {
+            const categories = ['all', ...new Set(boutiqueProducts.map(p => p.cat))];
+            const filterBar = document.getElementById('shop-filters-bar');
+            filterBar.innerHTML = categories.map((cat, idx) => `
+                <button class="shop-chip ${idx===0?'active':''}" onclick="filterShopCategory('${cat}', this)">${cat === 'all' ? 'Tous' : cat}</button>
+            `).join('');
+        }
+
+        function renderShop(products) {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = products.map(p => `
+                <div class="product-card">
+                    <div class="product-info">
+                        <div>
+                            <small style="color:var(--text-muted); font-weight:700; text-transform:uppercase; font-size:10px;">${p.cat}</small>
+                            <h4>${p.name}</h4>
+                            <p>${p.desc}</p>
+                            <div class="product-price">${p.price.toFixed(2)} €</div>
+                        </div>
+                        <button class="btn-action" style="width:100%; text-align:center; padding:10px; font-size:13px; margin-top:8px; box-shadow:none;" onclick="addProductToCart(${p.id})">Ajouter au panier</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterShopCategory(cat, btn) {
+            document.querySelectorAll('.shop-chip').forEach(c => c.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            if(cat === 'all') renderShop(boutiqueProducts);
+            else renderShop(boutiqueProducts.filter(p => p.cat === cat));
+        }
+
+        function filterShopProducts() {
+            const query = document.getElementById('shop-search').value.toLowerCase();
+            renderShop(boutiqueProducts.filter(p => p.name.toLowerCase().includes(query) || p.cat.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query)));
+        }
+
+        initShopFilters();
+    </script>
+</body>
+</html>
