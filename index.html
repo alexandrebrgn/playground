@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        try {
+            const savedTheme = localStorage.getItem('pg-theme');
+            document.documentElement.setAttribute('data-theme', savedTheme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+        } catch(e) {}
+    </script>
     <title>Playground - Sports & Réservations</title>
     <link rel="icon" type="image/png" href="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=32&h=32&q=80">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -20,7 +26,40 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
             --border: #e2e8f0;
+            --on-primary: #ffffff;
+            --hover-bg: #e2e8f0;
+            --accent-hover: #1d4ed8;
+            --accent-soft: #eff6ff;
+            --coral-soft: #fff1f2;
+            --shadow-color: rgba(15, 23, 42, 0.08);
+            --status-good: #0ca30c;
+            --status-warning: #b77800;
+            --status-critical: #d03b3b;
         }
+        html[data-theme="dark"] {
+            --bg-body: #0b1120;
+            --surface: #111827;
+            --surface-subtle: #1e293b;
+            --primary: #f1f5f9;
+            --accent: #3b82f6;
+            --coral: #fb7185;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #263247;
+            --on-primary: #0f172a;
+            --hover-bg: #263247;
+            --accent-hover: #60a5fa;
+            --accent-soft: rgba(59, 130, 246, 0.15);
+            --coral-soft: rgba(251, 113, 133, 0.12);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --status-good: #22c55e;
+            --status-warning: #fab219;
+            --status-critical: #f87171;
+            color-scheme: dark;
+        }
+        /* Transition douce des couleurs uniquement pendant le changement de thème */
+        html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after { transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease !important; }
+        html.theme-anim .theme-toggle svg { transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s !important; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', Arial, sans-serif; }
         body { background: var(--bg-body); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
         
@@ -28,7 +67,7 @@
         .header-left { display: flex; align-items: center; gap: 16px; }
         
         .back-btn { background: var(--surface-subtle); border: 1px solid var(--border); padding: 8px 14px; border-radius: 999px; color: var(--text-main); font-weight: 600; font-size: 13px; cursor: pointer; text-decoration: none; transition: background 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-        .back-btn:hover { background: #e2e8f0; }
+        .back-btn:hover { background: var(--hover-bg); }
 
         .logo { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 24px; font-weight: 800; color: var(--primary); cursor: pointer; letter-spacing: -0.5px; }
         .logo span { color: var(--accent); }
@@ -36,13 +75,13 @@
         .nav-links { display: flex; gap: 12px; align-items: center; }
         .nav-btn { background: var(--surface); border: 1px solid var(--border); padding: 9px 18px; border-radius: 999px; font-weight: 600; cursor: pointer; font-size: 14px; color: var(--text-main); transition: all 0.2s; position: relative; }
         .nav-btn:hover { background: var(--surface-subtle); }
-        .nav-btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 700;
+        .nav-btn.primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); font-weight: 700;
     }
          
 
         /* Bouton de connexion redimensionné et élégant */
-        .nav-btn.login-btn { background: var(--primary); color: #fff; border-color: var(--primary); padding: 9px 20px; font-weight: 700; }
-        .nav-btn.login-btn:hover { background: #1e293b; }
+        .nav-btn.login-btn { background: var(--primary); color: var(--on-primary); border-color: var(--primary); padding: 9px 20px; font-weight: 700; }
+        .nav-btn.login-btn:hover { background: var(--primary); opacity: 0.88; }
 
         .cart-badge { position: absolute; top: -6px; right: -6px; background: var(--coral); color: #fff; font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 999px; display: none; }
 
@@ -66,12 +105,39 @@
 
         .split-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.2) 60%, rgba(15,23,42,0.05) 100%); z-index: 1; }
         .split-card > * { position: relative; z-index: 2; color: #fff; }
-        .split-card.card-booking { background-image: url('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=1200&q=80'); }
-        .split-card.card-shop { background-image: url('https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=1200&q=80'); }
+        /* Image de fond sur un pseudo-élément pour pouvoir la zoomer lentement (effet Ken Burns) sans zoomer le texte */
+        .split-card::after { content: ''; position: absolute; inset: 0; z-index: 0; background-size: cover; background-position: center; animation: kenBurns 20s ease-in-out infinite alternate; }
+        .split-card.card-booking::after { background-image: url('https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=1200&q=80'); }
+        .split-card.card-shop::after { background-image: url('https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=1200&q=80'); animation-delay: -10s; }
+        .split-card { opacity: 0; animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards; }
+        .split-card.card-shop { animation-delay: 0.25s; }
+        .split-card h2, .split-card p, .split-card .btn-split { opacity: 0; animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .split-card.card-booking h2 { animation-delay: 0.35s; }
+        .split-card.card-booking p { animation-delay: 0.45s; }
+        .split-card.card-booking .btn-split { animation-delay: 0.55s; }
+        .split-card.card-shop h2 { animation-delay: 0.5s; }
+        .split-card.card-shop p { animation-delay: 0.6s; }
+        .split-card.card-shop .btn-split { animation-delay: 0.7s; }
+
+        @keyframes kenBurns {
+            from { transform: scale(1) translate(0, 0); }
+            to { transform: scale(1.12) translate(-2%, -1%); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .split-card h2 { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 42px; font-weight: 800; margin-bottom: 12px; letter-spacing: -1px; }
         .split-card p { font-size: 16px; margin-bottom: 28px; opacity: 0.9; max-width: 38ch; line-height: 1.5; }
-        .btn-split { background: #fff; color: var(--primary); border: none; padding: 14px 28px; border-radius: 999px; font-weight: 700; font-size: 15px; cursor: pointer; transition: transform 0.2s, background 0.2s; width: fit-content; }
+        .btn-split { background: #fff; color: #0f172a; border: none; padding: 14px 28px; border-radius: 999px; font-weight: 700; font-size: 15px; cursor: pointer; transition: transform 0.2s, background 0.2s; width: fit-content; }
         .btn-split:hover { background: var(--accent); color: #fff; transform: scale(1.03); }
+
+        /* BOUTON D'ACTION PRINCIPAL */
+        .btn-action { background: var(--accent); color: #fff; border: 1px solid var(--accent); padding: 12px 24px; border-radius: 999px; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25); transition: background 0.2s, box-shadow 0.2s, transform 0.15s; }
+        .btn-action:hover { background: var(--accent-hover); border-color: var(--accent-hover); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); transform: translateY(-1px); }
+        .btn-action:active { transform: translateY(0) scale(0.97); }
+        .btn-action:focus-visible { outline: 3px solid rgba(37, 99, 235, 0.35); outline-offset: 2px; }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
         /* VUE AUTH DIVISEE PAR DEUX PLEIN ECRAN */
         .auth-wrapper { display: grid; grid-template-columns: 1fr 1fr; width: 100%; height: 100vh; background: var(--surface); }
@@ -88,11 +154,11 @@
         
         .cities-grid-quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; text-align: left; }
         .city-pill-card { background: var(--bg-body); border: 1px solid var(--border); padding: 12px; border-radius: 14px; cursor: pointer; transition: all 0.2s; font-weight: 600; font-size: 14px; text-align: center; }
-        .city-pill-card:hover { border-color: var(--accent); background: #eff6ff; color: var(--accent); }
+        .city-pill-card:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 
         .sport-selector-row { display: flex; gap: 10px; justify-content: center; margin-top: 24px; flex-wrap: wrap; }
         .sport-select-pill { background: var(--bg-body); border: 1px solid var(--border); padding: 10px 20px; border-radius: 999px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-        .sport-select-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .sport-select-pill.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
 
         .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; background: var(--surface); padding: 16px 24px; border-radius: 16px; border: 1px solid var(--border); }
         .quick-change-bar { display: flex; gap: 10px; align-items: center; }
@@ -112,13 +178,115 @@
         .shop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
         .shop-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
         .shop-chip { border: 1px solid var(--border); background: var(--surface); padding: 8px 16px; border-radius: 999px; font-weight: 600; cursor: pointer; color: var(--text-muted); font-size: 14px; }
-        .shop-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .shop-chip.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-        .product-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-        .product-info { padding: 16px; display: flex; flex-direction: column; flex: 1; justify-content: space-between; }
-        .product-info h4 { font-size: 15px; margin-bottom: 4px; }
-        .product-info p { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
-        .product-price { font-weight: 800; color: var(--accent); font-size: 17px; margin: 4px 0; }
+        .product-card { position: relative; isolation: isolate; min-height: 340px; border-radius: 22px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; background: var(--surface-subtle); color: #fff; box-shadow: 0 4px 16px var(--shadow-color); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s; }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 14px 32px var(--shadow-color); }
+        .product-bg { position: absolute; inset: 0; z-index: -2; background-size: cover; background-position: center; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .product-card:hover .product-bg { transform: scale(1.07); }
+        .product-card::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to top, rgba(15,23,42,0.92) 0%, rgba(15,23,42,0.55) 40%, rgba(15,23,42,0) 70%); }
+        .product-cat { position: absolute; top: 14px; left: 14px; background: rgba(255,255,255,0.88); color: #0f172a; backdrop-filter: blur(6px); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; padding: 5px 10px; border-radius: 999px; }
+        .product-stock { position: absolute; top: 14px; right: 14px; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 999px; background: #d03b3b; color: #fff; }
+        .product-stock.low { background: #fab219; color: #0f172a; }
+        .product-info { padding: 18px; display: flex; flex-direction: column; gap: 4px; }
+        .product-info h4 { font-size: 17px; line-height: 1.25; }
+        .product-info p { font-size: 12px; color: rgba(255,255,255,0.78); }
+        .product-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; }
+        .product-price { font-weight: 800; font-size: 20px; }
+        .btn-add { background: #fff; color: #0f172a; border: none; padding: 10px 16px; border-radius: 999px; font-weight: 700; font-size: 13px; cursor: pointer; transition: background 0.2s, color 0.2s, transform 0.15s; white-space: nowrap; }
+        .btn-add:hover { background: var(--accent); color: #fff; }
+        .btn-add:active { transform: scale(0.95); }
+        .btn-add:disabled { background: rgba(255,255,255,0.35); color: rgba(255,255,255,0.8); cursor: not-allowed; }
+
+        /* ANIMATION D'AJOUT AU PANIER */
+        .fly-item { position: fixed; z-index: 4000; pointer-events: none; border-radius: 22px; background-size: cover; background-position: center; box-shadow: 0 10px 30px rgba(15,23,42,0.35); will-change: transform; }
+        .cart-bounce { animation: cartBounce 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes cartBounce {
+            0% { transform: translateY(0); }
+            30% { transform: translateY(9px) scaleY(0.92); }
+            60% { transform: translateY(-3px); }
+            100% { transform: translateY(0); }
+        }
+
+        /* TOGGLE THÈME */
+        .theme-toggle { width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); cursor: pointer; position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .theme-toggle:hover { background: var(--surface-subtle); }
+        .theme-toggle svg { position: absolute; width: 20px; height: 20px; transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s; }
+        .theme-toggle .icon-sun { color: #f59e0b; }
+        .theme-toggle .icon-moon { color: #a5b4fc; transform: translateY(30px) rotate(-90deg); opacity: 0; }
+        html[data-theme="dark"] .theme-toggle .icon-sun { transform: translateY(-30px) rotate(90deg); opacity: 0; }
+        html[data-theme="dark"] .theme-toggle .icon-moon { transform: translateY(0) rotate(0); opacity: 1; }
+
+        /* BOUTON FLOTTANT « CONTINUER MES ACHATS » */
+        .floating-cta { position: fixed; bottom: 24px; left: 50%; z-index: 1500; display: inline-flex; align-items: center; gap: 10px; background: var(--primary); color: var(--on-primary); border: none; padding: 14px 22px; border-radius: 999px; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 12px 30px rgba(15,23,42,0.3); transform: translate(-50%, 160%); opacity: 0; pointer-events: none; transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s; }
+        .floating-cta.show { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+        .floating-cta:hover { transform: translate(-50%, -2px); }
+        .floating-cta .cta-count { background: var(--coral); color: #fff; font-size: 12px; font-weight: 800; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; }
+
+        /* FAQ */
+        .faq-container { max-width: 820px; margin: 0 auto; }
+        .faq-hero { text-align: center; margin-bottom: 28px; }
+        .faq-hero h2 { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 36px; color: var(--primary); margin-bottom: 8px; letter-spacing: -0.5px; }
+        .faq-hero p { color: var(--text-muted); }
+        .faq-search { width: 100%; max-width: 480px; margin: 20px auto 0; display: block; padding: 12px 20px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text-main); font-size: 15px; outline: none; }
+        .faq-search:focus { border-color: var(--accent); }
+        .faq-cats { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+        .faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 10px; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }
+        .faq-item.open { border-color: var(--accent); box-shadow: 0 6px 20px var(--shadow-color); }
+        .faq-question { width: 100%; background: none; border: none; text-align: left; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; gap: 16px; cursor: pointer; font-size: 15px; font-weight: 700; color: var(--text-main); }
+        .faq-question small { display: block; font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+        .faq-icon { flex-shrink: 0; width: 28px; height: 28px; border-radius: 999px; background: var(--surface-subtle); display: inline-flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-muted); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, color 0.2s; }
+        .faq-item.open .faq-icon { transform: rotate(45deg); background: var(--accent); color: #fff; }
+        .faq-answer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+        .faq-item.open .faq-answer { grid-template-rows: 1fr; }
+        .faq-answer > div { overflow: hidden; }
+        .faq-answer p { padding: 0 20px 18px; color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+        .faq-contact { margin-top: 28px; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; }
+
+        /* ESPACE PRO : CONNEXION + TABLEAU DE BORD */
+        .pro-login-btn { position: absolute; top: 24px; right: 24px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-subtle); color: var(--text-main); font-weight: 700; font-size: 13px; cursor: pointer; transition: background 0.2s, border-color 0.2s; }
+        .pro-login-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .pro-login-btn:disabled { opacity: 0.7; cursor: wait; }
+        .spinner { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .dash-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+        .dash-header h2 { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 30px; color: var(--primary); letter-spacing: -0.5px; }
+        .dash-header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .kpi-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 18px 20px; }
+        .kpi-label { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+        .kpi-value { font-size: 28px; font-weight: 700; color: var(--text-main); margin-top: 6px; letter-spacing: -0.5px; }
+        .kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .dash-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 24px; }
+        .dash-panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .dash-panel-head h3 { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 20px; color: var(--primary); }
+        .dash-controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .dash-controls input, .dash-controls select { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-body); color: var(--text-main); font-size: 13px; font-weight: 600; outline: none; }
+        .table-wrap { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .data-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); font-weight: 700; padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; user-select: none; }
+        .data-table th.sortable { cursor: pointer; }
+        .data-table th.sortable:hover { color: var(--text-main); }
+        .data-table th .sort-arrow { opacity: 0.35; margin-left: 4px; }
+        .data-table th.sorted .sort-arrow { opacity: 1; color: var(--accent); }
+        .data-table td { padding: 12px; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text-main); }
+        .data-table tbody tr { transition: background 0.15s; }
+        .data-table tbody tr:hover { background: var(--surface-subtle); }
+        .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+        .data-table tfoot td { font-weight: 800; border-bottom: none; }
+        .prod-cell { display: flex; align-items: center; gap: 10px; }
+        .prod-thumb { width: 38px; height: 38px; border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; }
+        .prod-cell b { display: block; }
+        .prod-cell small { color: var(--text-muted); font-size: 11px; }
+        .stock-bar { width: 70px; height: 6px; border-radius: 999px; background: var(--surface-subtle); overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 8px; }
+        .stock-bar span { display: block; height: 100%; border-radius: 999px; }
+        .status { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 12px; color: var(--text-main); }
+        .status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+        .status.good::before { background: var(--status-good); }
+        .status.warning::before { background: var(--status-warning); }
+        .status.critical::before { background: var(--status-critical); }
+        .status-icon { font-size: 13px; }
 
         .cart-container, .checkout-container { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 32px; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
@@ -128,10 +296,70 @@
         .form-group label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; color: var(--text-muted); }
         .form-group input, .form-group select { width: 100%; padding: 12px 16px; background: var(--bg-body); border: 1px solid var(--border); border-radius: 12px; font-size: 15px; color: var(--text-main); outline: none; }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
-        .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; width: 100%; max-width: 580px; padding: 32px; position: relative; max-height: 90vh; overflow-y: auto; }
-        .shop-item { border: 1px solid var(--border); background: var(--bg-body); border-radius: 14px; padding: 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 8px; }
-        .shop-item.selected { border-color: var(--coral); background: #fff1f2; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.25s ease, visibility 0.25s; }
+        .modal-overlay.open { opacity: 1; visibility: visible; pointer-events: auto; }
+        .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; width: 100%; max-width: 580px; padding: 32px; position: relative; max-height: 90vh; overflow-y: auto; transform: translateY(24px) scale(0.96); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+        .shop-item { border: 1px solid var(--border); background: var(--bg-body); border-radius: 14px; padding: 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 8px; transition: border-color 0.2s, background 0.2s; }
+        .shop-item.selected { border-color: var(--coral); background: var(--coral-soft); }
+
+        /* RETOURS VISUELS DE SÉLECTION */
+        .sport-select-pill.active, .shop-chip.active, .shop-item.selected { animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .shop-chip { transition: background 0.2s, color 0.2s, border-color 0.2s; }
+        .slot-pill:active, .sport-select-pill:active, .shop-chip:active, .city-pill-card:active { transform: scale(0.94); }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.07); }
+            100% { transform: scale(1); }
+        }
+
+        /* BADGE PANIER */
+        .cart-badge.bump { animation: bump 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes bump {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.5); }
+            100% { transform: scale(1); }
+        }
+
+        /* APPARITION EN CASCADE DES LISTES */
+        .stagger-in > * { animation: slideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards; animation-delay: calc(var(--i, 0) * 60ms); }
+
+        /* SUPPRESSION D'UN ARTICLE DU PANIER */
+        .cart-item { overflow: hidden; }
+        .cart-item.removing { animation: slideOutCollapse 0.4s ease forwards; pointer-events: none; }
+        @keyframes slideOutCollapse {
+            0% { opacity: 1; transform: translateX(0); max-height: 120px; }
+            55% { opacity: 0; transform: translateX(60px); max-height: 120px; padding: 16px 0; }
+            100% { opacity: 0; transform: translateX(60px); max-height: 0; padding: 0; border-bottom-width: 0; }
+        }
+
+        /* NOTIFICATION (TOAST) */
+        .toast { position: fixed; bottom: 24px; right: 24px; z-index: 3000; background: var(--primary); color: var(--on-primary); padding: 12px 20px; border-radius: 999px; font-weight: 600; font-size: 14px; box-shadow: 0 10px 30px rgba(15,23,42,0.25); transform: translateX(calc(100% + 32px)); opacity: 0; transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s; pointer-events: none; max-width: calc(100vw - 48px); }
+        .toast.show { transform: translateX(0); opacity: 1; }
+
+        /* CONFIRMATION DE COMMANDE */
+        .success-overlay { position: fixed; inset: 0; z-index: 3000; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; padding: 20px; overflow: hidden; animation: fadeOverlay 0.25s ease; cursor: pointer; }
+        .success-overlay.closing { animation: fadeOverlay 0.25s ease reverse forwards; }
+        .success-card { background: var(--surface); border-radius: 24px; padding: 40px 48px; text-align: center; max-width: 420px; position: relative; z-index: 1; animation: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .success-card h3 { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 26px; color: var(--primary); margin: 16px 0 8px; }
+        .success-card p { color: var(--text-muted); font-size: 14px; line-height: 1.5; }
+        .success-check { width: 84px; height: 84px; }
+        .success-check circle { fill: none; stroke: #22c55e; stroke-width: 4; stroke-dasharray: 240; stroke-dashoffset: 240; animation: draw 0.6s ease-out 0.15s forwards; }
+        .success-check path { fill: none; stroke: #22c55e; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 60; stroke-dashoffset: 60; animation: draw 0.35s ease-out 0.7s forwards; }
+        .confetti { position: absolute; top: -20px; width: 10px; height: 14px; border-radius: 2px; animation: confettiFall var(--dur, 3s) cubic-bezier(0.25, 0.6, 0.5, 1) var(--delay, 0s) forwards; }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+        @keyframes fadeOverlay { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes confettiFall {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--dx, 0), 110vh) rotate(var(--rot, 720deg)); opacity: 0.8; }
+        }
+
+        /* ACCESSIBILITÉ : on coupe les animations si l'utilisateur l'a demandé */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+            .split-card::after { animation: none !important; }
+            .confetti { display: none; }
+        }
         .close-modal { position: absolute; top: 20px; right: 20px; border: none; background: transparent; font-size: 22px; cursor: pointer; color: var(--text-muted); }
 
         footer { background: var(--surface); border-top: 1px solid var(--border); padding: 40px 32px; margin-top: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; font-size: 14px; color: var(--text-muted); }
@@ -139,7 +367,7 @@
         footer ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
         footer a { color: inherit; text-decoration: none; cursor: pointer; }
 
-        @media(max-width: 768px) { .home-split-container, .content-grid, .form-grid, .cities-grid-quick, .auth-wrapper { grid-template-columns: 1fr; height: auto; } .auth-image-side { display: none; } }
+        @media(max-width: 768px) { header { padding: 12px 16px; flex-wrap: wrap; gap: 10px; } .nav-links { flex-wrap: wrap; gap: 8px; } .view { padding: 20px 16px; } .pro-login-btn { position: static; margin-bottom: 16px; } .home-split-container, .content-grid, .form-grid, .cities-grid-quick, .auth-wrapper { grid-template-columns: 1fr; height: auto; } .auth-image-side { display: none; } }
     </style>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
@@ -153,12 +381,16 @@
         <div class="nav-links">
             <button class="nav-btn" onclick="switchView('city-choice')">📅 Réserver</button>
             <button class="nav-btn" onclick="switchView('shop')">🛍️ Boutique</button>
-            <button class="nav-btn" onclick="switchView('cart')" style="display: flex; align-items: center; gap: 6px;">
+            <button class="nav-btn" id="cart-nav-btn" onclick="switchView('cart')" style="display: flex; align-items: center; gap: 6px;">
                 🛒 Panier <span class="cart-badge" id="cart-counter">0</span>
             </button>
             <button class="nav-btn primary" onclick="switchView('pro')">Espace Pro</button>
             <span id="user-display" style="font-weight: 700; font-size: 14px; color: var(--accent); margin-left: 8px; display: none;"></span>
             <button class="nav-btn login-btn" id="login-nav-btn" onclick="switchView('auth')">Connexion</button>
+            <button class="theme-toggle" onclick="toggleTheme()" aria-label="Basculer le thème clair / sombre" title="Thème clair / sombre">
+                <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+                <svg class="icon-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+            </button>
         </div>
     </header>
 
@@ -374,8 +606,9 @@
         <div class="navigation-bar">
             <button class="back-btn" onclick="switchView('home')">← Retour</button>
         </div>
-        <div class="checkout-container" style="max-width:700px;">
-            <h2 style="font-family:'Bricolage Grotesque', Arial, sans-serif; font-size:26px; margin-bottom:8px;">Espace Partenaire Pro</h2>
+        <div class="checkout-container" style="max-width:700px; position: relative;">
+            <button type="button" class="pro-login-btn" onclick="fakeProLogin(this)">🔐 Connexion gérant</button>
+            <h2 style="font-family:'Bricolage Grotesque', Arial, sans-serif; font-size:26px; margin-bottom:8px; padding-right: 170px;">Espace Partenaire Pro</h2>
             <p style="color: var(--text-muted); margin-bottom:24px; font-size: 14px;">Référencez votre complexe et boostez vos réservations sur Playground.</p>
             <form onsubmit="event.preventDefault(); alert('Établissement enregistré avec succès !'); switchView('home');">
                 <div class="form-group">
@@ -402,6 +635,85 @@
             </form>
         </div>
     </div>
+
+    <!-- VUE 7 : TABLEAU DE BORD PRO (après fausse connexion) -->
+    <div id="view-pro-dashboard" class="view">
+        <div class="dash-header">
+            <div>
+                <h2>Tableau de bord gérant</h2>
+                <p>Court Yard Saint-Herblain · données de démonstration</p>
+            </div>
+            <button class="nav-btn" onclick="proLogout()">Se déconnecter</button>
+        </div>
+
+        <div class="kpi-grid" id="kpi-grid"></div>
+
+        <div class="dash-panel">
+            <div class="dash-panel-head">
+                <h3>Stock boutique</h3>
+                <div class="dash-controls">
+                    <input type="text" id="stock-search" placeholder="Rechercher un produit..." oninput="renderStockTable()">
+                    <select id="stock-cat" onchange="renderStockTable()"></select>
+                    <select id="stock-status" onchange="renderStockTable()">
+                        <option value="all">Tous les statuts</option>
+                        <option value="good">En stock</option>
+                        <option value="warning">Stock faible</option>
+                        <option value="critical">Rupture</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr id="stock-table-head"></tr>
+                    </thead>
+                    <tbody id="stock-table-body"></tbody>
+                    <tfoot id="stock-table-foot"></tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="dash-panel">
+            <div class="dash-panel-head">
+                <h3>Réservations du jour</h3>
+                <span style="color: var(--text-muted); font-size: 13px;" id="resa-summary"></span>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Heure</th><th>Complexe</th><th>Sport</th><th>Client</th><th class="num">Joueurs</th><th class="num">Montant</th><th>Paiement</th></tr>
+                    </thead>
+                    <tbody id="resa-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- VUE 8 : FAQ -->
+    <div id="view-faq" class="view">
+        <div class="navigation-bar">
+            <button class="back-btn" onclick="switchView('home')">← Retour</button>
+        </div>
+        <div class="faq-container">
+            <div class="faq-hero">
+                <h2>Questions fréquentes</h2>
+                <p>Tout ce qu'il faut savoir sur les réservations, la boutique et l'espace pro.</p>
+                <input type="text" class="faq-search" id="faq-search" placeholder="Rechercher une question..." oninput="renderFaq()">
+            </div>
+            <div class="faq-cats" id="faq-cats"></div>
+            <div id="faq-list"></div>
+            <div class="faq-contact">
+                <b>Vous ne trouvez pas votre réponse ?</b>
+                <p style="color: var(--text-muted); font-size: 14px; margin: 6px 0 14px;">Notre équipe vous répond 7j/7 de 9h à 21h.</p>
+                <button class="btn-action" onclick="alert('Contact : contact@playground-sport.fr')">Contacter le support</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOUTON FLOTTANT : CONTINUER MES ACHATS -->
+    <button class="floating-cta" id="floating-cta" onclick="switchView('shop')">
+        🛍️ Continuer mes achats <span class="cta-count" id="cta-count">0</span>
+    </button>
 
     <!-- MODALE CROSS-SELLING -->
     <div class="modal-overlay" id="booking-modal">
@@ -453,7 +765,7 @@
             <h4>Support</h4>
             <ul>
                 <li><a onclick="alert('Contact : contact@playground-sport.fr')">Contactez-nous</a></li>
-                <li><a onclick="alert('Consultation de la FAQ.')">FAQ</a></li>
+                <li><a onclick="switchView('faq')">FAQ</a></li>
                 <li><a onclick="alert('Rejoignez notre équipe !')">Recrutement</a></li>
             </ul>
         </div>
@@ -567,22 +879,22 @@
             { nom: "Casa Padel Saint-Denis", ville: "Saint-Denis", activites: "Padel", reseau: "Casa Padel", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=300&q=80", lat: 48.92, lon: 2.35, prix: 40 }
         ];
 
-        // Catalogue boutique complet (extrait du fichier Excel)
+        // Catalogue boutique + stocks de démonstration (images Unsplash à remplacer à la main)
         const boutiqueProducts = [
-            { id: 1, name: "Raquette padel débutant", cat: "Padel", price: 39.99, desc: "Débuter avec une raquette tolérante." },
-            { id: 2, name: "Raquette padel polyvalente", cat: "Padel", price: 69.99, desc: "Équilibre entre contrôle et puissance." },
-            { id: 3, name: "Raquette padel contrôle", cat: "Padel", price: 89.99, desc: "Forme ronde et contrôle facilité." },
-            { id: 4, name: "Raquette padel puissance", cat: "Padel", price: 119.99, desc: "Forme diamant pour smashs percutants." },
-            { id: 5, name: "Balles padel x3", cat: "Padel", price: 6.99, desc: "Boîte de 3 balles haute pression." },
-            { id: 6, name: "Raquette pickleball composite", cat: "Pickleball", price: 49.99, desc: "Surface composite et cœur polymère." },
-            { id: 7, name: "Balles pickleball indoor x4", cat: "Pickleball", price: 12.99, desc: "Homologuées USAPA." },
-            { id: 8, name: "Ballon foot en salle pro", cat: "Foot à 5", price: 39.99, desc: "Rebond contrôlé et résistance indoor." },
-            { id: 9, name: "Chasubles d'entraînement x10", cat: "Foot à 5", price: 29.99, desc: "Marquage équipes fluo." },
-            { id: 10, name: "Chaussures indoor padel/foot", cat: "Vêtements et accessoires", price: 79.99, desc: "Semelle non-marquante multi-surfaces." },
-            { id: 11, name: "Short technique respirant", cat: "Vêtements et accessoires", price: 24.99, desc: "Léger avec poches latérales." },
-            { id: 12, name: "T-shirt technique performance", cat: "Vêtements et accessoires", price: 22.99, desc: "Anti-transpiration haute respirabilité." },
-            { id: 13, name: "Gourde sport inox 750ml", cat: "Entraînement et récupération", price: 18.99, desc: "Double paroi isotherme." },
-            { id: 14, name: "Rouleau de massage foam roller", cat: "Entraînement et récupération", price: 21.99, desc: "Récupération musculaire et mobilité." }
+            { id: 1, name: "Raquette padel débutant", cat: "Padel", price: 39.99, desc: "Débuter avec une raquette tolérante.", img: "https://images.unsplash.com/photo-1617883861744-13b534e3b928?auto=format&fit=crop&w=600&q=80", sku: "RP-PAD-001", stock: 42, sold: 128, cost: 18.00 },
+            { id: 2, name: "Raquette padel polyvalente", cat: "Padel", price: 69.99, desc: "Équilibre entre contrôle et puissance.", img: "https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?auto=format&fit=crop&w=600&q=80", sku: "RP-PAD-002", stock: 17, sold: 76, cost: 34.00 },
+            { id: 3, name: "Raquette padel contrôle", cat: "Padel", price: 89.99, desc: "Forme ronde et contrôle facilité.", img: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=600&q=80", sku: "RP-PAD-003", stock: 6, sold: 41, cost: 45.00 },
+            { id: 4, name: "Raquette padel puissance", cat: "Padel", price: 119.99, desc: "Forme diamant pour smashs percutants.", img: "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=600&q=80", sku: "RP-PAD-004", stock: 0, sold: 23, cost: 62.00 },
+            { id: 5, name: "Balles padel x3", cat: "Padel", price: 6.99, desc: "Boîte de 3 balles haute pression.", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=600&q=80", sku: "BA-PAD-005", stock: 310, sold: 864, cost: 2.90 },
+            { id: 6, name: "Raquette pickleball composite", cat: "Pickleball", price: 49.99, desc: "Surface composite et cœur polymère.", img: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=600&q=80", sku: "RP-PKB-006", stock: 14, sold: 37, cost: 22.00 },
+            { id: 7, name: "Balles pickleball indoor x4", cat: "Pickleball", price: 12.99, desc: "Homologuées USAPA.", img: "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=600&q=80", sku: "BA-PKB-007", stock: 58, sold: 112, cost: 5.20 },
+            { id: 8, name: "Ballon foot en salle pro", cat: "Foot à 5", price: 39.99, desc: "Rebond contrôlé et résistance indoor.", img: "https://images.unsplash.com/photo-1614632537190-23e4146777db?auto=format&fit=crop&w=600&q=80", sku: "BF-FT5-008", stock: 4, sold: 95, cost: 16.00 },
+            { id: 9, name: "Chasubles d'entraînement x10", cat: "Foot à 5", price: 29.99, desc: "Marquage équipes fluo.", img: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=600&q=80", sku: "CH-FT5-009", stock: 25, sold: 48, cost: 11.00 },
+            { id: 10, name: "Chaussures indoor padel/foot", cat: "Vêtements et accessoires", price: 79.99, desc: "Semelle non-marquante multi-surfaces.", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80", sku: "CS-VET-010", stock: 33, sold: 67, cost: 38.00 },
+            { id: 11, name: "Short technique respirant", cat: "Vêtements et accessoires", price: 24.99, desc: "Léger avec poches latérales.", img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=600&q=80", sku: "SH-VET-011", stock: 61, sold: 89, cost: 9.00 },
+            { id: 12, name: "T-shirt technique performance", cat: "Vêtements et accessoires", price: 22.99, desc: "Anti-transpiration haute respirabilité.", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80", sku: "TS-VET-012", stock: 0, sold: 154, cost: 8.50 },
+            { id: 13, name: "Gourde sport inox 750ml", cat: "Entraînement et récupération", price: 18.99, desc: "Double paroi isotherme.", img: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80", sku: "GO-REC-013", stock: 47, sold: 72, cost: 7.00 },
+            { id: 14, name: "Rouleau de massage foam roller", cat: "Entraînement et récupération", price: 21.99, desc: "Récupération musculaire et mobilité.", img: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=600&q=80", sku: "FR-REC-014", stock: 8, sold: 39, cost: 9.50 }
         ];
 
         let currentCity = "nantes";
@@ -592,8 +904,40 @@
         let selectedBookingTemp = null;
         let cart = [];
         let currentUser = null;
+        let currentView = 'home';
+        let proLoggedIn = false;
+        const LOW_STOCK = 8;
+
+        // Réservations de démonstration pour le tableau de bord pro
+        const proReservations = [
+            { time: "08:00", complex: "Court Yard Saint-Herblain", sport: "Padel", client: "Enzo V.", players: 4, amount: 34, status: "Payé" },
+            { time: "09:30", complex: "Court Yard Saint-Herblain", sport: "Pickleball", client: "Camille R.", players: 2, amount: 34, status: "Payé" },
+            { time: "11:00", complex: "Court Yard Saint-Herblain", sport: "Padel", client: "Hugo M.", players: 4, amount: 34, status: "En attente" },
+            { time: "12:30", complex: "Court Yard Saint-Herblain", sport: "Padel", client: "Léa B.", players: 4, amount: 34, status: "Payé" },
+            { time: "17:00", complex: "Court Yard Saint-Herblain", sport: "Pickleball", client: "Nathan D.", players: 4, amount: 34, status: "Annulé" },
+            { time: "18:30", complex: "Court Yard Saint-Herblain", sport: "Padel", client: "Inès T.", players: 4, amount: 34, status: "Payé" },
+            { time: "20:00", complex: "Court Yard Saint-Herblain", sport: "Padel", client: "Tom G.", players: 4, amount: 34, status: "En attente" }
+        ];
+
+        const faqData = [
+            { cat: "Réservation", q: "Comment réserver un terrain ?", a: "Cliquez sur « Réserver », choisissez votre ville et votre sport, puis sélectionnez un créneau disponible sur la fiche du complexe. Vous pouvez ajouter du matériel avant de valider votre panier." },
+            { cat: "Réservation", q: "Puis-je annuler ou modifier ma réservation ?", a: "Oui, l'annulation est gratuite jusqu'à 24h avant le créneau et vous êtes remboursé intégralement. Passé ce délai, le complexe peut retenir tout ou partie du montant." },
+            { cat: "Réservation", q: "Combien de joueurs par terrain ?", a: "Un terrain de padel accueille 4 joueurs, un terrain de pickleball 2 à 4 joueurs et un terrain de foot à 5 jusqu'à 10 joueurs. Le prix affiché est celui du terrain pour une heure, pas par joueur." },
+            { cat: "Réservation", q: "Dois-je apporter mon propre matériel ?", a: "Ce n'est pas obligatoire : la plupart des complexes louent raquettes et balles sur place. Vous pouvez aussi ajouter du matériel neuf à votre réservation et le retirer directement au complexe." },
+            { cat: "Boutique", q: "Quels sont les délais de livraison ?", a: "Les commandes sont expédiées sous 24h et livrées en 48 à 72h en France métropolitaine. La livraison est offerte dès 60 € d'achat." },
+            { cat: "Boutique", q: "Puis-je retirer ma commande dans un complexe ?", a: "Oui, le retrait en complexe partenaire est gratuit. Votre commande vous attend à l'accueil le jour de votre prochaine réservation." },
+            { cat: "Boutique", q: "Quelle raquette de padel choisir pour débuter ?", a: "Privilégiez une raquette de forme ronde, plus tolérante et plus facile à contrôler. Notre « Raquette padel débutant » est idéale pour vos premiers matchs." },
+            { cat: "Boutique", q: "Comment retourner un article ?", a: "Vous disposez de 30 jours pour retourner un article non utilisé, depuis votre espace client ou directement dans un complexe partenaire." },
+            { cat: "Paiement", q: "Quels moyens de paiement sont acceptés ?", a: "Carte bancaire (Visa, Mastercard, CB), Apple Pay, Google Pay et PayPal. Tous les paiements sont sécurisés et vos données bancaires ne sont jamais stockées par Playground." },
+            { cat: "Paiement", q: "Peut-on partager le paiement entre joueurs ?", a: "Oui : après la réservation, envoyez un lien de paiement à vos partenaires. Chacun règle sa part et le créneau reste garanti par l'organisateur." },
+            { cat: "Espace Pro", q: "Comment référencer mon complexe sur Playground ?", a: "Remplissez le formulaire de l'Espace Pro. Notre équipe vous recontacte sous 48h pour paramétrer vos terrains, vos tarifs et vos créneaux." },
+            { cat: "Espace Pro", q: "Quels outils sont disponibles pour les gérants ?", a: "Un tableau de bord avec vos réservations du jour, le suivi du stock de votre boutique, les ventes et les alertes de rupture, accessible depuis la connexion gérant." }
+        ];
+        let faqCat = 'all';
 
         function switchView(viewId) {
+            if(viewId === 'pro' && proLoggedIn) viewId = 'pro-dashboard';
+            currentView = viewId;
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById('view-' + viewId).classList.add('active');
             window.scrollTo(0, 0);
@@ -612,6 +956,9 @@
             if(viewId === 'shop') renderShop(boutiqueProducts);
             if(viewId === 'results') setTimeout(initMap, 100);
             if(viewId === 'cart') renderCart();
+            if(viewId === 'pro-dashboard') renderDashboard();
+            if(viewId === 'faq') renderFaq();
+            updateFloatingCta();
         }
 
         function handleLogin() {
@@ -661,72 +1008,139 @@
             renderCityResults();
         }
 
-        function initMap() {
-            const matched = complexesData.filter(c => c.ville.toLowerCase().includes(currentCity) || c.nom.toLowerCase().includes(currentCity));
-            const centerLat = matched.length > 0 ? matched[0].lat : 46.6;
-            const centerLon = matched.length > 0 ? matched[0].lon : 1.8;
-
-            if(!map) {
-                map = L.map('map').setView([centerLat, centerLon], 10);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
-                }).addTo(map);
-            } else {
-                map.setView([centerLat, centerLon], 10);
-            }
-
-            if(markersLayer) map.removeLayer(markersLayer);
-
-            markersLayer = L.layerGroup();
-            let complexes = matched.length > 0 ? matched : complexesData;
-            if(currentSport !== 'all') {
-                complexes = complexes.filter(c => c.activites.toLowerCase().includes(currentSport.toLowerCase()));
-            }
-
-            complexes.forEach(c => {
-                const marker = L.marker([c.lat, c.lon]).addTo(markersLayer);
-                marker.bindPopup(`<b>${c.nom}</b><br>${c.activites} - ${c.prix}€/h`);
-            });
-            markersLayer.addTo(map);
+        let tileLayer = null;
+        function mapTilesUrl() {
+            const style = document.documentElement.getAttribute('data-theme') === 'dark' ? 'Canvas/World_Dark_Gray_Base' : 'World_Street_Map';
+            return `https://server.arcgisonline.com/ArcGIS/rest/services/${style}/MapServer/tile/{z}/{y}/{x}`;
         }
 
-        function renderCityResults() {
-            const cityNameFormatted = currentCity.charAt(0).toUpperCase() + currentCity.slice(1);
-            document.getElementById('results-title').innerText = `Complexes à ${cityNameFormatted}`;
+        // Coordonnées des villes proposées (instantané, sans réseau) ; les autres villes passent par le géocodeur Esri
+        const SEARCH_RADIUS_KM = 35;
+        const cityCoords = {
+            'paris': [48.8566, 2.3522], 'nantes': [47.2184, -1.5536], 'lyon': [45.7640, 4.8357], 'marseille': [43.2965, 5.3698],
+            'bordeaux': [44.8378, -0.5792], 'toulouse': [43.6047, 1.4442], 'rennes': [48.1173, -1.6778], 'lille': [50.6292, 3.0573],
+            'montpellier': [43.6108, 3.8767], 'strasbourg': [48.5734, 7.7521], 'nice': [43.7102, 7.2620], 'le mans': [48.0061, 0.1996]
+        };
+        let searchResult = null;   // { label, lat, lon, complexes, nearestOnly } ou { notFound: true }
+        let searchToken = 0;
+        let cityMarker = null;
+
+        const prettyCity = str => str.replace(/(^|[\s-])\S/g, m => m.toUpperCase());
+        const autourDe = city => /^[aeiouyhéèêâîô]/i.test(city) ? `autour d'${city}` : `autour de ${city}`;
+        const normalize = str => str.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
+        function distanceKm(lat1, lon1, lat2, lon2) {
+            const rad = d => d * Math.PI / 180;
+            const a = Math.sin(rad(lat2 - lat1) / 2) ** 2 + Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(rad(lon2 - lon1) / 2) ** 2;
+            return 6371 * 2 * Math.asin(Math.sqrt(a));
+        }
+
+        async function locateCity(query) {
+            const key = normalize(query);
+            if(cityCoords[key]) return { label: prettyCity(query), lat: cityCoords[key][0], lon: cityCoords[key][1] };
+            try {
+                const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?f=json&countryCode=FRA&maxLocations=1&outFields=City&singleLine=${encodeURIComponent(query)}`;
+                const data = await (await fetch(url)).json();
+                const best = data.candidates && data.candidates[0];
+                if(best && best.score >= 80) return { label: best.attributes.City || query, lat: best.location.y, lon: best.location.x };
+            } catch(e) {}
+            // Hors ligne : on se rabat sur le nom des complexes
+            const matched = complexesData.filter(c => normalize(c.ville + ' ' + c.nom).includes(key));
+            if(matched.length) return { label: prettyCity(query), lat: matched[0].lat, lon: matched[0].lon };
+            return null;
+        }
+
+        function initMap() {
+            if(!map) {
+                map = L.map('map').setView([46.6, 2.4], 6);
+                // Fonds Esri : tile.openstreetmap.org (et CARTO) refusent les pages sans Referer, comme une ouverture en file://
+                tileLayer = L.tileLayer(mapTilesUrl(), {
+                    maxZoom: 16,
+                    attribution: 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, OpenStreetMap contributors'
+                }).addTo(map);
+            }
+            map.invalidateSize();
+            updateMap();
+        }
+
+        function updateMap() {
+            if(!map || !searchResult) return;
+            if(markersLayer) map.removeLayer(markersLayer);
+            if(cityMarker) map.removeLayer(cityMarker);
+            markersLayer = L.layerGroup();
+
+            if(searchResult.notFound) {
+                map.setView([46.6, 2.4], 6);
+                return;
+            }
+
+            cityMarker = L.circleMarker([searchResult.lat, searchResult.lon], { radius: 7, color: '#fff', weight: 2, fillColor: '#f43f5e', fillOpacity: 1 })
+                .bindTooltip(searchResult.label).addTo(map);
+            searchResult.complexes.forEach(c => {
+                L.marker([c.lat, c.lon]).bindPopup(`<b>${c.nom}</b><br>${c.activites} - ${c.prix}€/h<br>à ${Math.round(c.distance)} km`).addTo(markersLayer);
+            });
+            markersLayer.addTo(map);
+
+            const points = [[searchResult.lat, searchResult.lon], ...searchResult.complexes.map(c => [c.lat, c.lon])];
+            if(points.length > 1) map.fitBounds(points, { padding: [40, 40], maxZoom: 12 });
+            else map.setView(points[0], 11);
+        }
+
+        async function renderCityResults() {
+            const token = ++searchToken;
+            const query = currentCity.trim();
+            const title = document.getElementById('results-title');
+            const listContainer = document.getElementById('results-list');
             document.getElementById('quick-sport-select').value = currentSport;
+            title.innerText = `Recherche ${autourDe(prettyCity(query))}…`;
 
-            let complexes = complexesData.filter(c => c.ville.toLowerCase().includes(currentCity) || c.nom.toLowerCase().includes(currentCity));
-            if(complexes.length === 0) {
-                complexes = complexesData;
+            const place = await locateCity(query);
+            if(token !== searchToken) return; // une recherche plus récente a été lancée entre-temps
+
+            if(!place) {
+                searchResult = { notFound: true };
+                title.innerText = 'Ville introuvable';
+                listContainer.innerHTML = `<p style="color:var(--text-muted); padding:20px;">Nous n'avons pas trouvé « ${query} ». Vérifiez l'orthographe ou essayez une ville voisine.</p>`;
+                updateMap();
+                return;
             }
 
-            if(currentSport !== 'all') {
-                complexes = complexes.filter(c => c.activites.toLowerCase().includes(currentSport.toLowerCase()));
-            }
+            let candidates = complexesData
+                .filter(c => currentSport === 'all' || c.activites.toLowerCase().includes(currentSport.toLowerCase()))
+                .map(c => ({ ...c, distance: distanceKm(place.lat, place.lon, c.lat, c.lon) }))
+                .sort((a, b) => a.distance - b.distance);
+            let complexes = candidates.filter(c => c.distance <= SEARCH_RADIUS_KM);
+            const nearestOnly = complexes.length === 0;
+            if(nearestOnly) complexes = candidates.slice(0, 3);
+
+            searchResult = { ...place, complexes, nearestOnly };
+            title.innerText = nearestOnly ? `Aucun complexe ${autourDe(place.label)}` : `${complexes.length} complexe${complexes.length > 1 ? 's' : ''} ${autourDe(place.label)}`;
 
             const allSlots = ["08:00", "09:30", "11:00", "12:30", "14:00", "15:30", "17:00", "18:30", "20:00", "21:30"];
+            const note = nearestOnly && complexes.length ? `<p style="color:var(--text-muted); font-size:13px; padding:4px 4px 0;">Rien dans un rayon de ${SEARCH_RADIUS_KM} km. Voici les complexes les plus proches :</p>` : '';
 
-            const listContainer = document.getElementById('results-list');
-            listContainer.innerHTML = complexes.length ? complexes.map(c => `
-                <div class="complex-card">
+            listContainer.classList.add('stagger-in');
+            listContainer.innerHTML = complexes.length ? note + complexes.map((c, i) => `
+                <div class="complex-card" style="--i:${Math.min(i, 10)}">
                     <img src="${c.img}" class="complex-img" alt="Complexe">
                     <div class="complex-info">
                         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                             <div>
                                 <b style="font-size:15px;">${c.nom}</b>
+                                <small style="color:var(--text-muted); display:block;">📍 ${c.ville} · à ${Math.round(c.distance)} km</small>
                                 <small style="color:var(--text-muted); display:block;">${c.activites} · Réseau : ${c.reseau} · ★ 4.9</small>
                             </div>
                             <div style="font-weight:800; color:var(--accent); font-size:16px; text-align:right;">${c.prix} €<small style="font-size:10px; display:block; color:var(--text-muted); font-weight:normal;">/ heure</small></div>
                         </div>
                         <p style="font-size:12px; font-weight:600; margin-top:8px; color:var(--text-muted);">Créneaux disponibles :</p>
                         <div class="slots-row">
-                            ${allSlots.map(slot => `<div class="slot-pill" onclick="openCrossSell('${c.nom}', '${c.activites}',${c.prix}, '${slot}')">${slot}</div>`).join('')}
+                            ${allSlots.map(slot => `<div class="slot-pill" onclick="openCrossSell('${c.nom.replace(/'/g, "\\'")}', '${c.activites}',${c.prix}, '${slot}')">${slot}</div>`).join('')}
                         </div>
                     </div>
                 </div>
-            `).join('') : '<p style="color:var(--text-muted); padding:20px;">Aucun complexe ne correspond à cette recherche.</p>';
+            `).join('') : '<p style="color:var(--text-muted); padding:20px;">Aucun complexe ne propose ce sport pour le moment.</p>';
 
-            if(map) initMap();
+            updateMap();
         }
 
         function openCrossSell(complexName, sport, price, slotTime) {
@@ -744,12 +1158,20 @@
                     <span style="font-weight:800; color:var(--coral);">+ 6.99 €</span>
                 </div>
             `;
-            document.getElementById('booking-modal').style.display = 'flex';
+            document.getElementById('booking-modal').classList.add('open');
         }
 
         function closeModal() {
-            document.getElementById('booking-modal').style.display = 'none';
+            document.getElementById('booking-modal').classList.remove('open');
         }
+
+        // Fermeture de la modale au clic sur le fond ou avec Échap
+        document.getElementById('booking-modal').addEventListener('click', e => {
+            if(e.target.id === 'booking-modal') closeModal();
+        });
+        document.addEventListener('keydown', e => {
+            if(e.key === 'Escape') closeModal();
+        });
 
         function redirectToShopFromModal() {
             closeModal();
@@ -761,7 +1183,10 @@
                 type: 'terrain',
                 name: `Terrain ${selectedBookingTemp.sport} - ${selectedBookingTemp.complexName}`,
                 details: `Créneau : ${selectedBookingTemp.slotTime}`,
-                price: selectedBookingTemp.price
+                price: selectedBookingTemp.price,
+                slot: selectedBookingTemp.slotTime,
+                sport: selectedBookingTemp.sport,
+                complex: selectedBookingTemp.complexName
             });
 
             document.querySelectorAll('#cross-sell-items .shop-item.selected').forEach(el => {
@@ -778,19 +1203,97 @@
             switchView('cart');
         }
 
-        function addProductToCart(productId) {
+        function addProductToCart(productId, btn) {
             const prod = boutiqueProducts.find(p => p.id === productId);
-            if(prod) {
+            if(prod && prod.stock > 0) {
                 cart.push({ type: 'boutique', name: prod.name, details: prod.cat, price: prod.price });
-                updateCartBadge();
-                alert(`${prod.name} a été ajouté à votre panier !`);
+                const card = btn ? btn.closest('.product-card') : null;
+                flyToCart(card, prod.img, () => {
+                    updateCartBadge();
+                    showToast(`✓ ${prod.name} ajouté au panier`);
+                });
             }
+        }
+
+        // L'image du produit file vers le panier en rapetissant et en tournant, puis le panier rebondit
+        function flyToCart(card, imgUrl, done) {
+            const cartBtn = document.getElementById('cart-nav-btn');
+            if(!card || !cartBtn || matchMedia('(prefers-reduced-motion: reduce)').matches) return done();
+
+            const from = card.getBoundingClientRect();
+            const to = cartBtn.getBoundingClientRect();
+            const size = Math.min(from.width, 200);
+            const startX = from.left + from.width / 2 - size / 2;
+            const startY = from.top + from.height / 2 - size / 2;
+            const dx = to.left + to.width / 2 - (startX + size / 2);
+            const dy = to.top + to.height / 2 - (startY + size / 2);
+
+            const fly = document.createElement('div');
+            fly.className = 'fly-item';
+            Object.assign(fly.style, { left: startX + 'px', top: startY + 'px', width: size + 'px', height: size + 'px', backgroundImage: `url('${imgUrl}')` });
+            document.body.appendChild(fly);
+
+            let landed = false;
+            const land = () => {
+                if(landed) return;
+                landed = true;
+                fly.remove();
+                cartBtn.classList.remove('cart-bounce');
+                void cartBtn.offsetWidth;
+                cartBtn.classList.add('cart-bounce');
+                done();
+            };
+            fly.animate([
+                { transform: 'translate(0, 0) scale(1) rotate(0deg)', borderRadius: '22px', opacity: 1 },
+                { transform: `translate(${dx * 0.45}px, ${dy * 0.45 - 70}px) scale(0.5) rotate(260deg)`, borderRadius: '40%', opacity: 1, offset: 0.45 },
+                { transform: `translate(${dx}px, ${dy}px) scale(0.06) rotate(560deg)`, borderRadius: '50%', opacity: 0.7 }
+            ], { duration: 700, easing: 'cubic-bezier(0.5, 0, 0.75, 0.4)' }).onfinish = land;
+            setTimeout(land, 900); // filet de sécurité si l'animation est interrompue
+        }
+
+        function updateFloatingCta() {
+            const cta = document.getElementById('floating-cta');
+            document.getElementById('cta-count').innerText = cart.length;
+            cta.classList.toggle('show', cart.length > 0 && currentView !== 'shop' && currentView !== 'auth');
+        }
+
+        let themeTimer = null;
+        function toggleTheme() {
+            const root = document.documentElement;
+            const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            root.classList.add('theme-anim');
+            root.setAttribute('data-theme', next);
+            try { localStorage.setItem('pg-theme', next); } catch(e) {}
+            if(tileLayer) tileLayer.setUrl(mapTilesUrl());
+            clearTimeout(themeTimer);
+            themeTimer = setTimeout(() => root.classList.remove('theme-anim'), 400);
         }
 
         function updateCartBadge() {
             const badge = document.getElementById('cart-counter');
             badge.innerText = cart.length;
             badge.style.display = cart.length > 0 ? 'inline-block' : 'none';
+            // Relance l'animation de rebond à chaque mise à jour
+            badge.classList.remove('bump');
+            void badge.offsetWidth;
+            badge.classList.add('bump');
+            updateFloatingCta();
+        }
+
+        let toastTimer = null;
+        function showToast(message) {
+            let toast = document.getElementById('toast');
+            if(!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast';
+                toast.className = 'toast';
+                document.body.appendChild(toast);
+            }
+            toast.innerText = message;
+            void toast.offsetWidth;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
         }
 
         function renderCart() {
@@ -813,7 +1316,7 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: 16px;">
                             <span style="font-weight: 700; color: var(--accent);">${item.price.toFixed(2)} €</span>
-                            <button onclick="removeFromCart(${index})" style="background:none; border:none; color:var(--coral); cursor:pointer; font-weight:bold;">✕</button>
+                            <button onclick="removeFromCart(${index}, this)" style="background:none; border:none; color:var(--coral); cursor:pointer; font-weight:bold;">✕</button>
                         </div>
                     </div>
                 `;
@@ -822,10 +1325,22 @@
             document.getElementById('cart-total').innerText = total.toFixed(2) + " €";
         }
 
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCartBadge();
-            renderCart();
+        function removeFromCart(index, btn) {
+            const row = btn ? btn.closest('.cart-item') : null;
+            let done = false;
+            const remove = () => {
+                if(done) return;
+                done = true;
+                cart.splice(index, 1);
+                updateCartBadge();
+                renderCart();
+            };
+            if(!row) return remove();
+            // On bloque les autres suppressions le temps de l'animation (les index changent ensuite)
+            document.querySelectorAll('#cart-items-list .cart-item button').forEach(b => b.disabled = true);
+            row.classList.add('removing');
+            row.addEventListener('animationend', remove, { once: true });
+            setTimeout(remove, 600); // filet de sécurité si l'animation est interrompue
         }
 
         function goToCheckout() {
@@ -837,10 +1352,62 @@
         }
 
         function finalizeOrder() {
-            alert('Commande validée avec succès ! Un e-mail de confirmation vous a été envoyé.');
+            cart.forEach(item => {
+                const prod = boutiqueProducts.find(p => p.name === item.name);
+                if(prod) {
+                    prod.sold++;
+                    prod.stock = Math.max(0, prod.stock - 1);
+                }
+                if(item.type === 'terrain') {
+                    proReservations.push({ time: item.slot, complex: item.complex, sport: item.sport, client: currentUser || 'Client web', players: 4, amount: item.price, status: 'Payé' });
+                }
+            });
+            proReservations.sort((a, b) => a.time.localeCompare(b.time));
             cart = [];
             updateCartBadge();
-            switchView('home');
+            showOrderSuccess();
+        }
+
+        function showOrderSuccess() {
+            const overlay = document.createElement('div');
+            overlay.className = 'success-overlay';
+            const colors = ['#2563eb', '#f43f5e', '#22c55e', '#f59e0b', '#a855f7', '#0ea5e9'];
+            let confetti = '';
+            for(let i = 0; i < 80; i++) {
+                const style = [
+                    `left:${Math.random() * 100}%`,
+                    `background:${colors[i % colors.length]}`,
+                    `--dx:${Math.round(Math.random() * 200 - 100)}px`,
+                    `--rot:${Math.round(Math.random() * 1080 - 540)}deg`,
+                    `--dur:${(2.2 + Math.random() * 1.8).toFixed(2)}s`,
+                    `--delay:${(Math.random() * 0.4).toFixed(2)}s`,
+                    `width:${6 + Math.round(Math.random() * 6)}px`
+                ].join(';');
+                confetti += `<span class="confetti" style="${style}"></span>`;
+            }
+            overlay.innerHTML = `
+                ${confetti}
+                <div class="success-card">
+                    <svg class="success-check" viewBox="0 0 84 84">
+                        <circle cx="42" cy="42" r="38"></circle>
+                        <path d="M26 43 l11 11 l21 -23"></path>
+                    </svg>
+                    <h3>Commande validée !</h3>
+                    <p>Un e-mail de confirmation vous a été envoyé.</p>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            let closed = false;
+            const close = () => {
+                if(closed) return;
+                closed = true;
+                overlay.classList.add('closing');
+                setTimeout(() => overlay.remove(), 250);
+                switchView('home');
+            };
+            overlay.addEventListener('click', close);
+            setTimeout(close, 3200);
         }
 
         function initShopFilters() {
@@ -853,16 +1420,19 @@
 
         function renderShop(products) {
             const grid = document.getElementById('product-grid');
-            grid.innerHTML = products.map(p => `
-                <div class="product-card">
+            grid.classList.add('stagger-in');
+            grid.innerHTML = products.map((p, i) => `
+                <div class="product-card" style="--i:${Math.min(i, 12)}">
+                    <div class="product-bg" style="background-image:url('${p.img}')"></div>
+                    <span class="product-cat">${p.cat}</span>
+                    ${p.stock === 0 ? '<span class="product-stock">Rupture</span>' : p.stock <= LOW_STOCK ? `<span class="product-stock low">Plus que ${p.stock}</span>` : ''}
                     <div class="product-info">
-                        <div>
-                            <small style="color:var(--text-muted); font-weight:700; text-transform:uppercase; font-size:10px;">${p.cat}</small>
-                            <h4>${p.name}</h4>
-                            <p>${p.desc}</p>
-                            <div class="product-price">${p.price.toFixed(2)} €</div>
+                        <h4>${p.name}</h4>
+                        <p>${p.desc}</p>
+                        <div class="product-bottom">
+                            <span class="product-price">${p.price.toFixed(2)} €</span>
+                            <button class="btn-add" onclick="addProductToCart(${p.id}, this)" ${p.stock === 0 ? 'disabled' : ''}>${p.stock === 0 ? 'Indisponible' : '+ Ajouter'}</button>
                         </div>
-                        <button class="btn-action" style="width:100%; text-align:center; padding:10px; font-size:13px; margin-top:8px; box-shadow:none;" onclick="addProductToCart(${p.id})">Ajouter au panier</button>
                     </div>
                 </div>
             `).join('');
@@ -878,6 +1448,168 @@
         function filterShopProducts() {
             const query = document.getElementById('shop-search').value.toLowerCase();
             renderShop(boutiqueProducts.filter(p => p.name.toLowerCase().includes(query) || p.cat.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query)));
+        }
+
+        // ---------- FAQ ----------
+        function renderFaq() {
+            const cats = ['all', ...new Set(faqData.map(f => f.cat))];
+            document.getElementById('faq-cats').innerHTML = cats.map(c => `
+                <button class="shop-chip ${c === faqCat ? 'active' : ''}" onclick="faqCat='${c}'; renderFaq();">${c === 'all' ? 'Toutes' : c}</button>
+            `).join('');
+
+            const query = document.getElementById('faq-search').value.trim().toLowerCase();
+            const items = faqData.filter(f => (faqCat === 'all' || f.cat === faqCat) && (f.q + ' ' + f.a).toLowerCase().includes(query));
+            const list = document.getElementById('faq-list');
+            list.classList.add('stagger-in');
+            list.innerHTML = items.length ? items.map((f, i) => `
+                <div class="faq-item" style="--i:${Math.min(i, 10)}">
+                    <button class="faq-question" onclick="toggleFaq(this)" aria-expanded="false">
+                        <span><small>${f.cat}</small>${f.q}</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer"><div><p>${f.a}</p></div></div>
+                </div>
+            `).join('') : '<p style="text-align:center; color:var(--text-muted); padding:20px;">Aucune question ne correspond à votre recherche.</p>';
+        }
+
+        function toggleFaq(btn) {
+            const item = btn.closest('.faq-item');
+            const open = item.classList.toggle('open');
+            btn.setAttribute('aria-expanded', open);
+        }
+
+        // ---------- Espace pro ----------
+        function fakeProLogin(btn) {
+            const label = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Connexion…';
+            setTimeout(() => {
+                proLoggedIn = true;
+                btn.disabled = false;
+                btn.innerHTML = label;
+                switchView('pro-dashboard');
+                showToast('✓ Connecté à l\'espace gérant');
+            }, 900);
+        }
+
+        function proLogout() {
+            proLoggedIn = false;
+            switchView('pro');
+        }
+
+        const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+        const intFr = new Intl.NumberFormat('fr-FR');
+        const stockStatus = p => p.stock === 0 ? { key: 'critical', label: 'Rupture' } : p.stock <= LOW_STOCK ? { key: 'warning', label: 'Stock faible' } : { key: 'good', label: 'En stock' };
+        const statusColor = { good: 'var(--status-good)', warning: 'var(--status-warning)', critical: 'var(--status-critical)' };
+
+        const stockColumns = [
+            { key: 'sku', label: 'Réf.' },
+            { key: 'name', label: 'Produit' },
+            { key: 'price', label: 'Prix', num: true },
+            { key: 'margin', label: 'Marge', num: true },
+            { key: 'stock', label: 'Stock', num: true },
+            { key: 'sold', label: 'Vendus', num: true },
+            { key: 'revenue', label: 'CA généré', num: true },
+            { key: 'status', label: 'Statut' }
+        ];
+        let stockSort = { key: 'revenue', dir: -1 };
+
+        function sortStock(key) {
+            stockSort = stockSort.key === key ? { key, dir: -stockSort.dir } : { key, dir: key === 'name' || key === 'sku' ? 1 : -1 };
+            renderStockTable();
+        }
+
+        function renderDashboard() {
+            const revenue = boutiqueProducts.reduce((t, p) => t + p.sold * p.price, 0);
+            const sold = boutiqueProducts.reduce((t, p) => t + p.sold, 0);
+            const stockValue = boutiqueProducts.reduce((t, p) => t + p.stock * p.cost, 0);
+            const units = boutiqueProducts.reduce((t, p) => t + p.stock, 0);
+            const out = boutiqueProducts.filter(p => p.stock === 0).length;
+            const low = boutiqueProducts.filter(p => p.stock > 0 && p.stock <= LOW_STOCK).length;
+            const resaRevenue = proReservations.filter(r => r.status !== 'Annulé').reduce((t, r) => t + r.amount, 0);
+
+            const tiles = [
+                { label: "Chiffre d'affaires boutique", value: euro.format(revenue), sub: 'Depuis l\'ouverture de la boutique' },
+                { label: 'Articles vendus', value: intFr.format(sold), sub: `${boutiqueProducts.length} références au catalogue` },
+                { label: 'Valeur du stock', value: euro.format(stockValue), sub: `${intFr.format(units)} unités au prix d'achat` },
+                { label: 'Alertes stock', value: `${out + low}`, sub: `<span class="status critical">${out} en rupture</span> · <span class="status warning">${low} faibles</span>` },
+                { label: 'Réservations du jour', value: `${proReservations.length}`, sub: `${euro.format(resaRevenue)} encaissés ou à venir` }
+            ];
+            const grid = document.getElementById('kpi-grid');
+            grid.classList.add('stagger-in');
+            grid.innerHTML = tiles.map((t, i) => `
+                <div class="kpi-tile" style="--i:${i}">
+                    <div class="kpi-label">${t.label}</div>
+                    <div class="kpi-value">${t.value}</div>
+                    <div class="kpi-sub">${t.sub}</div>
+                </div>
+            `).join('');
+
+            const catSelect = document.getElementById('stock-cat');
+            const currentCat = catSelect.value || 'all';
+            catSelect.innerHTML = ['all', ...new Set(boutiqueProducts.map(p => p.cat))].map(c => `<option value="${c}" ${c === currentCat ? 'selected' : ''}>${c === 'all' ? 'Toutes les catégories' : c}</option>`).join('');
+
+            renderStockTable();
+            renderReservations();
+        }
+
+        function renderStockTable() {
+            const query = document.getElementById('stock-search').value.trim().toLowerCase();
+            const cat = document.getElementById('stock-cat').value || 'all';
+            const status = document.getElementById('stock-status').value;
+
+            const rows = boutiqueProducts
+                .map(p => ({ ...p, revenue: p.sold * p.price, margin: (p.price - p.cost) / p.price, status: stockStatus(p) }))
+                .filter(p => (cat === 'all' || p.cat === cat) && (status === 'all' || p.status.key === status) && (p.name + ' ' + p.sku).toLowerCase().includes(query))
+                .sort((a, b) => {
+                    const va = stockSort.key === 'status' ? a.stock : a[stockSort.key];
+                    const vb = stockSort.key === 'status' ? b.stock : b[stockSort.key];
+                    return (typeof va === 'string' ? va.localeCompare(vb) : va - vb) * stockSort.dir;
+                });
+
+            document.getElementById('stock-table-head').innerHTML = stockColumns.map(c => `
+                <th class="sortable ${c.num ? 'num' : ''} ${stockSort.key === c.key ? 'sorted' : ''}" onclick="sortStock('${c.key}')">${c.label}<span class="sort-arrow">${stockSort.key === c.key ? (stockSort.dir === 1 ? '▲' : '▼') : '↕'}</span></th>
+            `).join('');
+
+            const body = document.getElementById('stock-table-body');
+            body.innerHTML = rows.length ? rows.map(p => `
+                <tr>
+                    <td style="color:var(--text-muted); font-family: monospace;">${p.sku}</td>
+                    <td><div class="prod-cell"><div class="prod-thumb" style="background-image:url('${p.img}')"></div><div><b>${p.name}</b><small>${p.cat}</small></div></div></td>
+                    <td class="num">${euro.format(p.price)}</td>
+                    <td class="num">${Math.round(p.margin * 100)} %</td>
+                    <td class="num">${p.stock}<span class="stock-bar"><span style="width:${Math.min(100, p.stock / 60 * 100)}%; background:${statusColor[p.status.key]};"></span></span></td>
+                    <td class="num">${intFr.format(p.sold)}</td>
+                    <td class="num">${euro.format(p.revenue)}</td>
+                    <td><span class="status ${p.status.key}">${p.status.label}</span></td>
+                </tr>
+            `).join('') : `<tr><td colspan="${stockColumns.length}" style="text-align:center; color:var(--text-muted); padding:24px;">Aucun produit ne correspond à ces filtres.</td></tr>`;
+
+            document.getElementById('stock-table-foot').innerHTML = rows.length ? `
+                <tr>
+                    <td colspan="4">Total (${rows.length} produits)</td>
+                    <td class="num">${intFr.format(rows.reduce((t, p) => t + p.stock, 0))}</td>
+                    <td class="num">${intFr.format(rows.reduce((t, p) => t + p.sold, 0))}</td>
+                    <td class="num">${euro.format(rows.reduce((t, p) => t + p.revenue, 0))}</td>
+                    <td></td>
+                </tr>` : '';
+        }
+
+        function renderReservations() {
+            const statusKey = { 'Payé': 'good', 'En attente': 'warning', 'Annulé': 'critical' };
+            document.getElementById('resa-table-body').innerHTML = proReservations.map(r => `
+                <tr>
+                    <td><b>${r.time}</b></td>
+                    <td>${r.complex}</td>
+                    <td>${r.sport}</td>
+                    <td>${r.client}</td>
+                    <td class="num">${r.players}</td>
+                    <td class="num">${euro.format(r.amount)}</td>
+                    <td><span class="status ${statusKey[r.status]}">${r.status}</span></td>
+                </tr>
+            `).join('');
+            const paid = proReservations.filter(r => r.status === 'Payé').length;
+            document.getElementById('resa-summary').innerText = `${paid} payées sur ${proReservations.length}`;
         }
 
         initShopFilters();
