@@ -1,0 +1,39 @@
+# --- IDE JetBrains (IntelliJ / PhpStorm / WebStorm) ---
+# Fichiers propres à chaque poste (les fichiers projet partagés restent suivis)
+.idea/workspace.xml
+.idea/usage.statistics.xml
+.idea/shelf/
+.idea/tasks.xml
+.idea/dictionaries/
+.idea/httpRequests/
+.idea/dataSources/
+.idea/dataSources.local.xml
+.idea/sqldialects.xml
+.idea/php.xml
+*.iws
+out/
+
+# --- Autres éditeurs ---
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- Systèmes d'exploitation ---
+.DS_Store
+._*
+Thumbs.db
+desktop.ini
+
+# --- Dépendances, builds et logs (si le projet évolue) ---
+node_modules/
+dist/
+build/
+.cache/
+*.log
+npm-debug.log*
+
+# --- Variables d'environnement / secrets ---
+.env
+.env.*
+!.env.example
