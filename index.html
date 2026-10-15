@@ -167,6 +167,9 @@
 
         /* L'accueil occupe plus d'espace que les autres pages : jusqu'à 1600 px de large et quasiment toute la hauteur d'écran */
         #view-home.view { max-width: 1600px; padding-top: 24px; padding-bottom: 24px; }
+        /* L'accueil remplit tout l'écran sous la navbar, cartes centrées : le footer n'apparaît qu'en faisant défiler */
+        #view-home.view.active { display: flex; flex-direction: column; justify-content: center; min-height: calc(100vh - var(--header-h, 73px)); min-height: calc(100dvh - var(--header-h, 73px)); }
+        #view-home .home-stage { width: 100%; }
         .home-split-container { display: flex; gap: 24px; align-items: center; margin-bottom: 0; min-width: auto; perspective: 1400px; }
         .split-card { flex: 1; height: clamp(460px, calc(100vh - 240px), 680px); border-radius: 28px; padding: 50px; display: flex; flex-direction: column; justify-content: flex-end; position: relative; overflow: hidden; cursor: pointer; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: flex 0.7s cubic-bezier(0.16, 1, 0.3, 1), margin 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease-out, box-shadow 0.5s; will-change: transform;
@@ -2625,6 +2628,13 @@
         }
 
         initHomeAnimations();
+
+        // Hauteur réelle de la navbar (différente sur mobile), utilisée pour que l'accueil remplisse l'écran
+        function measureHeader() {
+            document.documentElement.style.setProperty('--header-h', `${document.getElementById('main-header').offsetHeight}px`);
+        }
+        measureHeader();
+        addEventListener('resize', measureHeader);
 
         // ---------- Menu burger (mobile) ----------
         function toggleMenu(force) {
