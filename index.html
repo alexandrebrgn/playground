@@ -265,7 +265,42 @@
         .slot-pill:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
         .shop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
-        .shop-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+        /* Boutique : barre latérale de catégories */
+        .shop-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; align-items: start; }
+        .shop-sidebar { position: sticky; top: 90px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px 12px; }
+        .shop-sidebar h3 { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 17px; color: var(--primary); padding: 0 8px 12px; }
+        .shop-cats { display: flex; flex-direction: column; gap: 2px; }
+        .shop-cat { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; padding: 10px 12px; border: none; border-radius: 12px; background: none; color: var(--text-main); font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; transition: background 0.2s, color 0.2s; }
+        .shop-cat:hover { background: var(--surface-subtle); }
+        .shop-cat::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: var(--accent); transform: scaleY(0); transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+        .shop-cat.active { background: var(--accent-soft); color: var(--accent); }
+        .shop-cat.active::before { transform: scaleY(1); }
+        .shop-cat small { flex-shrink: 0; min-width: 26px; padding: 2px 8px; border-radius: 999px; background: var(--surface-subtle); color: var(--text-muted); font-size: 12px; font-weight: 700; text-align: center; }
+        .shop-cat.active small { background: var(--accent); color: #fff; }
+        .shop-tools { width: 280px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+        .layout-switch { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+        .layout-switch span { font-size: 12px; font-weight: 600; color: var(--text-muted); padding: 0 6px; }
+        .layout-switch button { display: inline-flex; gap: 2px; align-items: center; justify-content: center; height: 30px; padding: 0 8px; border: none; border-radius: 8px; background: none; cursor: pointer; transition: background 0.2s; }
+        .layout-switch button i { width: 4px; height: 14px; border-radius: 2px; background: var(--text-muted); }
+        .layout-switch button:hover { background: var(--surface-subtle); }
+        .layout-switch button.active { background: var(--accent-soft); }
+        .layout-switch button.active i { background: var(--accent); }
+        .product-grid.fixed-cols { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); }
+        .product-grid.fixed-cols .product-price { white-space: nowrap; }
+        .product-grid.fixed-cols .product-bottom { flex-wrap: wrap; }
+        .product-grid.cols-5 { gap: 14px; }
+        .product-grid.cols-5 .product-card { min-height: 280px; }
+        .product-grid.cols-5 .product-info { padding: 14px; }
+        .product-grid.cols-5 .product-info h4 { font-size: 15px; }
+        .product-grid.cols-5 .product-price { font-size: 17px; }
+        .product-grid.cols-5 .product-bottom { flex-direction: column; align-items: stretch; gap: 8px; }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 28px; flex-wrap: wrap; }
+        .pagination:empty { display: none; }
+        .pagination button { min-width: 38px; height: 38px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); font-weight: 700; font-size: 14px; cursor: pointer; transition: background 0.2s, border-color 0.2s, color 0.2s; }
+        .pagination button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+        .pagination button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .shop-count { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; }
         .shop-chip { border: 1px solid var(--border); background: var(--surface); padding: 8px 16px; border-radius: 999px; font-weight: 600; cursor: pointer; color: var(--text-muted); font-size: 14px; }
         .shop-chip.active { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
@@ -285,6 +320,15 @@
         .btn-add { background: #fff; color: #0f172a; border: none; padding: 10px 16px; border-radius: 999px; font-weight: 700; font-size: 13px; cursor: pointer; transition: background 0.2s, color 0.2s, transform 0.15s; white-space: nowrap; }
         .btn-add:hover { background: var(--accent); color: #fff; }
         .btn-add:active { transform: scale(0.95); }
+        /* Produits proposés après réservation : même carte que la boutique, en plus compact et sélectionnable */
+        .cross-sell-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .cross-sell-grid .product-card { min-height: 230px; cursor: pointer; outline: 3px solid transparent; outline-offset: -3px; transition: transform 0.2s, box-shadow 0.2s, outline-color 0.2s; }
+        .cross-sell-grid .product-info { padding: 14px; }
+        .cross-sell-grid .product-info h4 { font-size: 15px; }
+        .cross-sell-grid .product-price { font-size: 17px; }
+        .cross-sell-grid .product-card.selected { outline-color: var(--accent); }
+        .cross-sell-grid .product-price { white-space: nowrap; }
+        .cross-sell-grid .product-card.selected .btn-add { background: var(--accent); color: #fff; }
         .btn-add:disabled { background: rgba(255,255,255,0.35); color: rgba(255,255,255,0.8); cursor: not-allowed; }
 
         /* ANIMATION D'AJOUT AU PANIER */
@@ -517,11 +561,65 @@
         }
         .modal.modal-small { max-width: 440px; }
         .confirm-recap { background: var(--bg-body); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; margin: 16px 0 4px; display: flex; flex-direction: column; gap: 8px; }
+        .pay-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .onsite-note { display: none; margin-top: 10px; padding: 12px 14px; border: 1px dashed var(--accent); border-radius: 14px; }
+        .onsite-note.open { display: block; }
+        .pay-option { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg-body); cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+        .pay-option input { position: absolute; opacity: 0; pointer-events: none; }
+        .pay-option b { font-size: 14px; }
+        .pay-option small { font-size: 12px; color: var(--text-muted); }
+        .pay-option:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+        .pay-option:has(input:checked) b { color: var(--accent); }
+        .pay-option:has(input:focus-visible) { outline: 3px solid rgba(37, 99, 235, 0.35); outline-offset: 2px; }
+        .split-box { display: none; flex-direction: column; gap: 8px; margin-top: 10px; padding: 14px 16px; border: 1px dashed var(--accent); border-radius: 14px; animation: popIn 0.25s ease; }
+        .split-box.open { display: flex; }
+        .split-players { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: var(--text-muted); }
+        .stepper { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border); border-radius: 999px; padding: 3px; background: var(--surface); }
+        .stepper button { width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--surface-subtle); color: var(--text-main); font-size: 16px; font-weight: 700; cursor: pointer; }
+        .stepper button:hover:not(:disabled) { background: var(--accent); color: #fff; }
+        .stepper button:disabled { opacity: 0.35; cursor: not-allowed; }
+        .stepper b { min-width: 26px; text-align: center; color: var(--text-main); }
+        #split-share { color: var(--accent); font-size: 16px; }
+        .split-note { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+        .share-box { display: none; flex-direction: column; gap: 8px; margin-bottom: 18px; padding: 14px 16px; border-radius: 14px; background: var(--accent-soft); border: 1px solid var(--accent); }
+        .share-box.open { display: flex; }
+        .share-box b { font-size: 14px; color: var(--text-main); }
+        .share-box p { font-size: 13px; color: var(--text-muted); }
+        .share-link { display: flex; gap: 8px; }
+        .share-copy { padding: 8px 16px; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent); color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; }
+        .share-copy:hover { background: var(--accent-hover); }
+        .share-link input { flex: 1; min-width: 0; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); font-size: 13px; font-weight: 600; }
         .modal-overlay.celebrate { overflow: hidden; }
         .modal-overlay.celebrate .modal { animation: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 1; }
         .celebrate-head { text-align: center; margin-bottom: 18px; }
         .celebrate-head .success-check { width: 72px; height: 72px; }
         .celebrate-head h3 { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 26px; color: var(--primary); margin: 10px 0 6px; }
+        /* FICHE PRODUIT */
+        .product-modal { max-width: 900px; padding: 28px; }
+        .pm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+        .pm-media { position: relative; aspect-ratio: 1; border-radius: 18px; background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .pm-media img { width: 100%; height: 100%; object-fit: contain; }
+        .pm-info { display: flex; flex-direction: column; gap: 16px; padding-top: 6px; }
+        .pm-cat { align-self: flex-start; padding: 4px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; }
+        .pm-info h3 { font-family: 'Bricolage Grotesque', Arial, sans-serif; font-size: 28px; line-height: 1.15; color: var(--primary); padding-right: 30px; }
+        .pm-price-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .pm-price-row b { font-size: 28px; color: var(--accent); }
+        .pm-desc { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+        .pm-label { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+        #pm-size-hint { font-weight: 600; color: var(--text-muted); margin-left: 6px; }
+        #pm-size-hint.error { color: var(--status-critical); }
+        .pm-sizes { display: flex; gap: 8px; flex-wrap: wrap; }
+        .pm-sizes.shake { animation: shake 0.4s; }
+        @keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+        .pm-size { min-width: 52px; height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-body); color: var(--text-main); font-weight: 700; font-size: 14px; cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
+        .pm-size:hover:not(:disabled) { border-color: var(--accent); }
+        .pm-size.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .pm-size:disabled { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+        .pm-unique { display: inline-block; padding: 10px 14px; border-radius: 12px; border: 1px dashed var(--border); color: var(--text-muted); font-size: 13px; font-weight: 600; }
+        .pm-add { width: 100%; padding: 14px; margin-top: 4px; }
+        .pm-add:disabled { background: var(--surface-subtle); border-color: var(--border); color: var(--text-muted); box-shadow: none; cursor: not-allowed; transform: none; }
+        .pm-ref { color: var(--text-muted); font-size: 12px; }
+        .product-grid .product-card { cursor: pointer; }
         .close-modal { position: absolute; top: 20px; right: 20px; border: none; background: transparent; font-size: 22px; cursor: pointer; color: var(--text-muted); }
 
         footer { background: var(--surface); border-top: 1px solid var(--border); padding: 40px 32px; margin-top: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; font-size: 14px; color: var(--text-muted); }
@@ -585,6 +683,17 @@
             .search-bar-modern input { min-width: 0; font-size: 15px; }
             .cities-grid-quick { grid-template-columns: repeat(3, 1fr); }
 
+            /* Boutique : les catégories passent en bandeau défilant horizontalement */
+            .shop-layout { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+            .shop-sidebar { position: static; padding: 0; border: none; background: none; }
+            .shop-sidebar h3 { display: none; }
+            .shop-cats { flex-direction: row; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+            .shop-cat { width: auto; flex-shrink: 0; white-space: nowrap; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); padding: 8px 14px; }
+            .shop-cat::before { display: none; }
+            .shop-tools { width: 100%; }
+            .layout-switch { display: none; }
+            .product-grid.fixed-cols { grid-template-columns: 1fr; }
+
             /* Résultats : carte puis liste */
             .results-header { padding: 14px 16px; }
             .quick-change-bar { width: 100%; flex-wrap: wrap; }
@@ -605,6 +714,13 @@
 
             /* Modales */
             .modal { padding: 24px 18px; }
+            .pm-grid { grid-template-columns: 1fr; gap: 18px; }
+            .pm-media { aspect-ratio: 4 / 3; }
+            .pm-info h3 { font-size: 23px; }
+            .pay-options { grid-template-columns: 1fr; }
+            .cross-sell-grid .product-info { padding: 12px; }
+            .cross-sell-grid .product-bottom { flex-direction: column; align-items: stretch; gap: 8px; }
+            .cross-sell-grid .btn-add { width: 100%; }
             .booking-head h2 { font-size: 24px; }
         }
     </style>
@@ -819,14 +935,27 @@
         </div>
         <div class="shop-header">
             <h2>Boutique Playground</h2>
-            <div style="width: 280px;">
+            <div class="shop-tools">
                 <input type="text" id="shop-search" placeholder="Rechercher un article..." oninput="filterShopProducts()" style="width:100%; padding:10px 16px; border:1px solid var(--border); border-radius:999px; outline:none; font-size:14px; background:var(--surface);">
+                <div class="layout-switch" role="group" aria-label="Nombre de colonnes">
+                    <span>Affichage</span>
+                    <button type="button" data-cols="3" onclick="setShopCols(3)" title="3 colonnes, 12 articles par page"><i></i><i></i><i></i></button>
+                    <button type="button" data-cols="4" onclick="setShopCols(4)" title="4 colonnes, 16 articles par page" class="active"><i></i><i></i><i></i><i></i></button>
+                    <button type="button" data-cols="5" onclick="setShopCols(5)" title="5 colonnes, 20 articles par page"><i></i><i></i><i></i><i></i><i></i></button>
+                </div>
             </div>
         </div>
-        <div class="shop-filters" id="shop-filters-bar">
-            <button class="shop-chip active" onclick="filterShopCategory('all', this)">Tous</button>
+        <div class="shop-layout">
+            <aside class="shop-sidebar">
+                <h3>Catégories</h3>
+                <nav class="shop-cats" id="shop-filters-bar"></nav>
+            </aside>
+            <div>
+                <p class="shop-count" id="shop-count"></p>
+                <div class="product-grid" id="product-grid"></div>
+                <nav class="pagination" id="shop-pagination" aria-label="Pages de la boutique"></nav>
+            </div>
         </div>
-        <div class="product-grid" id="product-grid"></div>
     </div>
 
     <!-- VUE 4 : PANIER -->
@@ -1074,9 +1203,43 @@
                         <input type="text" id="confirm-lastname" placeholder="Blanchard" autocomplete="family-name" required>
                     </div>
                 </div>
+
+                <p style="font-weight: 700; font-size: 14px; margin: 18px 0 10px;">Paiement</p>
+                <div class="pay-options">
+                    <label class="pay-option">
+                        <input type="radio" name="pay-mode" value="full" checked onchange="renderSplit()">
+                        <b>Je paie tout</b>
+                        <small id="pay-full-amount"></small>
+                    </label>
+                    <label class="pay-option">
+                        <input type="radio" name="pay-mode" value="split" onchange="renderSplit()">
+                        <b>Je paie ma part</b>
+                        <small>Les autres paieront plus tard</small>
+                    </label>
+                    <label class="pay-option">
+                        <input type="radio" name="pay-mode" value="onsite" onchange="renderSplit()">
+                        <b>Je paie sur place</b>
+                        <small>À l'accueil du complexe</small>
+                    </label>
+                </div>
+                <p class="split-note onsite-note" id="onsite-note">Rien à payer maintenant : vous réglerez <b id="onsite-amount"></b> à l'accueil le jour de la session. Pensez à arriver 10 min avant.</p>
+                <div class="split-box" id="split-box">
+                    <div class="split-players">
+                        <span>Nombre de joueurs</span>
+                        <div class="stepper">
+                            <button type="button" onclick="changeSplitPlayers(-1)" aria-label="Un joueur de moins">−</button>
+                            <b id="split-players">4</b>
+                            <button type="button" onclick="changeSplitPlayers(1)" aria-label="Un joueur de plus">+</button>
+                        </div>
+                    </div>
+                    <div class="bs-row"><span>Votre part</span><span id="split-share"></span></div>
+                    <div class="bs-row"><span>Reste pour le groupe</span><span id="split-rest"></span></div>
+                    <p class="split-note">Vos partenaires recevront un lien pour régler leur part. Le terrain reste bloqué jusqu'à 24 h avant la session.</p>
+                </div>
+
                 <div style="display:flex; gap:10px; margin-top:20px;">
                     <button type="button" class="nav-btn" style="flex:1; padding:12px;" onclick="closeConfirmModal()">Non, annuler</button>
-                    <button type="submit" class="btn-action" style="flex:2; padding:12px; font-size:14px;">Oui, réserver</button>
+                    <button type="submit" class="btn-action" style="flex:2; padding:12px; font-size:14px;" id="confirm-submit">Oui, réserver</button>
                 </div>
             </form>
         </div>
@@ -1094,9 +1257,17 @@
                 <h3>Créneau réservé !</h3>
                 <p style="color: var(--text-muted); font-size: 14px;" id="modal-subtitle"></p>
             </div>
+            <div class="share-box" id="share-box">
+                <b>👥 Envoyez ce lien à vos partenaires</b>
+                <p id="share-text"></p>
+                <div class="share-link">
+                    <input type="text" id="share-link" readonly onclick="this.select()">
+                    <button type="button" class="share-copy" onclick="copyShareLink()">Copier</button>
+                </div>
+            </div>
             <p style="font-weight: 700; font-size: 14px; margin-bottom: 10px;">Besoin d'équipement pour votre session ?</p>
             
-            <div id="cross-sell-items"></div>
+            <div class="cross-sell-grid" id="cross-sell-items"></div>
 
             <div style="background: var(--bg-body); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin: 16px 0; display: flex; justify-content: space-between; align-items: center;">
                 <div>
@@ -1107,8 +1278,41 @@
             </div>
 
             <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="nav-btn" style="flex:1; padding:12px;" onclick="closeModal(); switchView('cart');">Non merci</button>
+                <button class="nav-btn" style="flex:1; padding:12px;" onclick="closeModal()">Non merci</button>
                 <button class="btn-action" style="flex:2; padding:12px; font-size:14px;" onclick="confirmAndAddToCart()">Ajouter la sélection au panier</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE FICHE PRODUIT -->
+    <div class="modal-overlay" id="product-modal">
+        <div class="modal product-modal" role="dialog" aria-labelledby="pm-title">
+            <button class="close-modal" onclick="closeProduct()" aria-label="Fermer">×</button>
+            <div class="pm-grid">
+                <div class="pm-media" id="pm-media"><img id="pm-img" alt=""></div>
+                <div class="pm-info">
+                    <span class="pm-cat" id="pm-cat"></span>
+                    <h3 id="pm-title"></h3>
+                    <div class="pm-price-row">
+                        <b id="pm-price"></b>
+                        <span class="status" id="pm-stock"></span>
+                    </div>
+                    <p class="pm-desc" id="pm-desc"></p>
+                    <div>
+                        <div class="pm-label"><span id="pm-size-label">Taille</span> <span id="pm-size-hint"></span></div>
+                        <div class="pm-sizes" id="pm-sizes"></div>
+                    </div>
+                    <div>
+                        <div class="pm-label">Quantité</div>
+                        <div class="stepper" id="pm-qty-stepper">
+                            <button type="button" onclick="changeProductQty(-1)" aria-label="Diminuer la quantité">−</button>
+                            <b id="pm-qty">1</b>
+                            <button type="button" onclick="changeProductQty(1)" aria-label="Augmenter la quantité">+</button>
+                        </div>
+                    </div>
+                    <button class="btn-action pm-add" id="pm-add" onclick="addFromProduct()">Ajouter au panier</button>
+                    <small class="pm-ref" id="pm-ref"></small>
+                </div>
             </div>
         </div>
     </div>
@@ -1255,20 +1459,34 @@
 
         // Catalogue boutique + stocks de démonstration (images Unsplash à remplacer à la main)
         const boutiqueProducts = [
-            { id: 1, name: "Raquette padel débutant", cat: "Padel", price: 39.99, desc: "Débuter avec une raquette tolérante.", img: "https://images.unsplash.com/photo-1617883861744-13b534e3b928?auto=format&fit=crop&w=600&q=80", sku: "RP-PAD-001", stock: 42, sold: 128, cost: 18.00 },
-            { id: 2, name: "Raquette padel polyvalente", cat: "Padel", price: 69.99, desc: "Équilibre entre contrôle et puissance.", img: "https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?auto=format&fit=crop&w=600&q=80", sku: "RP-PAD-002", stock: 17, sold: 76, cost: 34.00 },
-            { id: 3, name: "Raquette padel contrôle", cat: "Padel", price: 89.99, desc: "Forme ronde et contrôle facilité.", img: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=600&q=80", sku: "RP-PAD-003", stock: 6, sold: 41, cost: 45.00 },
-            { id: 4, name: "Raquette padel puissance", cat: "Padel", price: 119.99, desc: "Forme diamant pour smashs percutants.", img: "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=600&q=80", sku: "RP-PAD-004", stock: 0, sold: 23, cost: 62.00 },
-            { id: 5, name: "Balles padel x3", cat: "Padel", price: 6.99, desc: "Boîte de 3 balles haute pression.", img: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=600&q=80", sku: "BA-PAD-005", stock: 310, sold: 864, cost: 2.90 },
-            { id: 6, name: "Raquette pickleball composite", cat: "Pickleball", price: 49.99, desc: "Surface composite et cœur polymère.", img: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=600&q=80", sku: "RP-PKB-006", stock: 14, sold: 37, cost: 22.00 },
-            { id: 7, name: "Balles pickleball indoor x4", cat: "Pickleball", price: 12.99, desc: "Homologuées USAPA.", img: "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=600&q=80", sku: "BA-PKB-007", stock: 58, sold: 112, cost: 5.20 },
-            { id: 8, name: "Ballon foot en salle pro", cat: "Foot à 5", price: 39.99, desc: "Rebond contrôlé et résistance indoor.", img: "https://images.unsplash.com/photo-1614632537190-23e4146777db?auto=format&fit=crop&w=600&q=80", sku: "BF-FT5-008", stock: 4, sold: 95, cost: 16.00 },
-            { id: 9, name: "Chasubles d'entraînement x10", cat: "Foot à 5", price: 29.99, desc: "Marquage équipes fluo.", img: "https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=600&q=80", sku: "CH-FT5-009", stock: 25, sold: 48, cost: 11.00 },
-            { id: 10, name: "Chaussures indoor padel/foot", cat: "Vêtements et accessoires", price: 79.99, desc: "Semelle non-marquante multi-surfaces.", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80", sku: "CS-VET-010", stock: 33, sold: 67, cost: 38.00 },
-            { id: 11, name: "Short technique respirant", cat: "Vêtements et accessoires", price: 24.99, desc: "Léger avec poches latérales.", img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=600&q=80", sku: "SH-VET-011", stock: 61, sold: 89, cost: 9.00 },
-            { id: 12, name: "T-shirt technique performance", cat: "Vêtements et accessoires", price: 22.99, desc: "Anti-transpiration haute respirabilité.", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80", sku: "TS-VET-012", stock: 0, sold: 154, cost: 8.50 },
-            { id: 13, name: "Gourde sport inox 750ml", cat: "Entraînement et récupération", price: 18.99, desc: "Double paroi isotherme.", img: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80", sku: "GO-REC-013", stock: 47, sold: 72, cost: 7.00 },
-            { id: 14, name: "Rouleau de massage foam roller", cat: "Entraînement et récupération", price: 21.99, desc: "Récupération musculaire et mobilité.", img: "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=600&q=80", sku: "FR-REC-014", stock: 8, sold: 39, cost: 9.50 }
+            { id: 1, name: "Raquette padel débutant", cat: "Padel", price: 39.99, desc: "Mousse EVA souple, idéale pour débuter.", img: "https://esprit-padel-shop.com/cdn/shop/files/Raquette-de-padel-Siux-Zyron-Anthracite-2026-Face.png?v=1790663468", sku: "RP-PAD-001", stock: 42, sold: 128, cost: 18.00, long: "Pensée pour vos premières parties, cette raquette en mousse EVA souple pardonne les frappes décentrées et ménage le bras. Sa forme ronde offre une grande zone de frappe pour gagner vite en confiance." },
+            { id: 2, name: "Raquette padel polyvalente", cat: "Padel", price: 69.99, desc: "Équilibre entre contrôle et puissance.", img: "https://www.extreme-padel.fr/modules/wkwebp/views/img/product/63009-large_default.webp", sku: "RP-PAD-002", stock: 17, sold: 76, cost: 34.00, long: "Le juste milieu entre contrôle et puissance. Sa forme en goutte d'eau et son équilibre neutre conviennent aux joueurs qui progressent et veulent une raquette qui suit leur évolution." },
+            { id: 3, name: "Raquette padel contrôle", cat: "Padel", price: 89.99, desc: "Forme ronde et grande zone de frappe.", img: "https://www.extreme-padel.fr/53677-zoom_default/raquette-bullpadel-ionic-control-26.jpg", sku: "RP-PAD-003", stock: 6, sold: 41, cost: 45.00, long: "Forme ronde, balance basse et cœur en mousse souple : tout est fait pour placer la balle avec précision. Idéale pour les joueurs de fond de court qui construisent le point." },
+            { id: 4, name: "Raquette padel puissance", cat: "Padel", price: 119.99, desc: "Forme diamant en carbone pour smasher.", img: "https://www.padelreference.com/blog/top-5-des-raquette-de-padel-puissantes-2024/raquette-de-padel-babolat-technical-viper-lebron-2024-face_1200x/", sku: "RP-PAD-004", stock: 0, sold: 23, cost: 62.00, long: "Forme diamant, faces en carbone et balance haute pour des smashs qui sortent de la cage. Réservée aux joueurs confirmés qui recherchent l'impact maximal au filet." },
+            { id: 5, name: "Balles padel x3", cat: "Padel", price: 6.99, desc: "Tube de 3 balles pressurisées.", img: "https://contents.mediadecathlon.com/p2773646/k$a4ddc682e7d204f4e9ede0387a5c6f06/picture.jpg", sku: "BA-PAD-005", stock: 310, sold: 864, cost: 2.90, long: "Tube de 3 balles pressurisées homologuées, avec un rebond régulier et un feutre résistant aux murs et au grillage. Parfait pour vos matchs comme pour l'entraînement." },
+            { id: 6, name: "Sac raquettes padel", cat: "Padel", price: 49.99, desc: "Thermo, jusqu'à 3 raquettes.", img: "https://esprit-padel-shop.com/cdn/shop/files/nox-sac-de-raquette-de-padel-pro-series-cote.jpg?v=1693292860&width=800", sku: "SC-PAD-006", stock: 12, sold: 19, cost: 22.00, long: "Sac thermo pouvant accueillir jusqu'à 3 raquettes, avec un compartiment isotherme qui protège le matériel de la chaleur et une poche séparée pour les affaires mouillées." },
+            { id: 7, name: "Raquette pickleball composite", cat: "Pickleball", price: 49.99, desc: "Fibre de verre et cœur nid d'abeille.", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/71/A_pickleball_paddle_with_two_pickleballs.jpg/500px-A_pickleball_paddle_with_two_pickleballs.jpg", sku: "RP-PKB-007", stock: 14, sold: 37, cost: 22.00, long: "Surface en fibre de verre texturée pour un maximum d'effet et cœur en nid d'abeille polymère pour un toucher doux et silencieux. Une raquette sérieuse pour progresser." },
+            { id: 8, name: "Raquette pickleball bois", cat: "Pickleball", price: 24.99, desc: "Robuste et économique pour s'initier.", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e7/Pickleball_one_paddle3.jpg/500px-Pickleball_one_paddle3.jpg", sku: "RP-PKB-008", stock: 28, sold: 54, cost: 9.00, long: "Simple, robuste et économique : la raquette idéale pour découvrir le pickleball en famille ou entre amis, sans se ruiner." },
+            { id: 9, name: "Kit pickleball 2 joueurs", cat: "Pickleball", price: 64.99, desc: "2 raquettes et 4 balles.", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/Pickleball_balls_and_paddles.jpg/500px-Pickleball_balls_and_paddles.jpg", sku: "KT-PKB-009", stock: 9, sold: 21, cost: 29.00, long: "Tout pour commencer à deux : 2 raquettes légères et 4 balles, rangés dans une housse de transport. Vous n'avez plus qu'à réserver un terrain." },
+            { id: 10, name: "Balles pickleball indoor x3", cat: "Pickleball", price: 9.99, desc: "Légères, grands trous, pour la salle.", img: "https://esprit-padel-shop.com/cdn/shop/files/Tube-de-3-balles-de-Pickleball-Head-Championship-26.png?v=1780906499&width=500", sku: "BA-PKB-010", stock: 58, sold: 112, cost: 4.00, long: "Balles légères à gros trous conçues pour les terrains en salle : rebond doux et trajectoire stable, même dans les grands gymnases." },
+            { id: 11, name: "Balles pickleball outdoor x6", cat: "Pickleball", price: 14.99, desc: "Plastique dur résistant, 40 trous.", img: "https://proshop.fft.fr/89761-superlarge_default/lot-de-3-balles-de-pickleball-tour-40-trous.jpg", sku: "BA-PKB-011", stock: 44, sold: 63, cost: 6.00, long: "Balles en plastique dur à 40 petits trous, plus lourdes et plus résistantes au vent. Elles gardent leur rondeur partie après partie." },
+            { id: 12, name: "Ballon foot en salle pro", cat: "Foot à 5", price: 39.99, desc: "Rebond contrôlé, taille futsal.", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/Adidas_Telstar_18_Futsal_at_the_2018_YOG_Futsal_draw.jpg/500px-Adidas_Telstar_18_Futsal_at_the_2018_YOG_Futsal_draw.jpg", sku: "BF-FT5-012", stock: 4, sold: 95, cost: 16.00, long: "Ballon de futsal taille 4 à rebond contrôlé, pensé pour les surfaces dures. Sa couverture cousue offre un toucher précis pour les passes courtes et les frappes à ras du sol." },
+            { id: 13, name: "Ballon d'entraînement", cat: "Foot à 5", price: 17.99, desc: "Résistant, idéal pour les séances.", img: "https://media.intersport.fr/is/image/intersportfr/IN9366_7D7_FA?$product_grey$&layer=comp&fit=constrain,0&$produit_xl$&fmt=webp", sku: "BF-FT5-013", stock: 36, sold: 58, cost: 7.00, long: "Un ballon résistant fait pour enchaîner les séances : couverture renforcée, vessie butyle qui garde la pression longtemps, prix doux pour en équiper toute l'équipe." },
+            { id: 14, name: "Chasubles d'entraînement x10", cat: "Foot à 5", price: 29.99, desc: "Fluo, maille respirante.", img: "https://www.netsportique.fr/cdn/shop/files/ta924-1--x5.webp?v=1782188340", sku: "CH-FT5-014", stock: 25, sold: 48, cost: 11.00, long: "Lot de 10 chasubles fluo en maille respirante pour former les équipes en un instant. Coupe ample qui se porte par-dessus le maillot, lavage en machine.", sizes: ["S", "M", "L", "XL"] },
+            { id: 15, name: "Protège-tibias", cat: "Foot à 5", price: 14.99, desc: "Coque légère et bonne tenue.", img: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Shinpads.jpg", sku: "PT-FT5-015", stock: 31, sold: 66, cost: 5.00, long: "Coque légère et rigide qui absorbe les chocs, doublure en mousse confortable et bande de maintien pour qu'ils ne bougent pas pendant le match.", sizes: ["S", "M", "L", "XL"] },
+            { id: 16, name: "Gants de gardien", cat: "Foot à 5", price: 34.99, desc: "Paume latex grip, maintien du poignet.", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/Football_goalkeeper_gloves_Force_1000.jpg/500px-Football_goalkeeper_gloves_Force_1000.jpg", sku: "GG-FT5-016", stock: 5, sold: 27, cost: 14.00, long: "Paume en latex grip pour bloquer les ballons les plus appuyés et sangle de poignet ajustable pour un bon maintien. Adaptés aux surfaces synthétiques et indoor." },
+            { id: 17, name: "Raquette squash initiation", cat: "Squash", price: 44.99, desc: "Cadre alu léger, grande tête.", img: "https://contents.mediadecathlon.com/p2257452/k$cf87e8ba9909f45a1617459326502ac0/picture.jpg", sku: "RP-SQU-017", stock: 11, sold: 18, cost: 19.00, long: "Cadre en aluminium léger et grande tête pour une zone de frappe tolérante. La raquette idéale pour découvrir le squash et prendre le rythme." },
+            { id: 18, name: "Raquette squash carbone", cat: "Squash", price: 109.99, desc: "Cadre graphite 125 g, précision maximale.", img: "https://passionsquash.fr/wp-content/uploads/nc/2025/07/raquette-squash-karakal-carbon-120-.jpg", sku: "RP-SQU-018", stock: 3, sold: 9, cost: 52.00, long: "Cadre en graphite de 125 g, très maniable, pour les joueurs qui veulent de la précision et de la vitesse de bras. Le choix des compétiteurs." },
+            { id: 19, name: "Balles squash x2", cat: "Squash", price: 7.99, desc: "Double point jaune pour joueurs confirmés.", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Squash_Ball_Dunlop_Revelation_Pro_2.jpg/500px-Squash_Ball_Dunlop_Revelation_Pro_2.jpg", sku: "BA-SQU-019", stock: 64, sold: 90, cost: 3.00, long: "Balles double point jaune, la référence du jeu confirmé : rebond lent qui demande un vrai échauffement et récompense les longs échanges." },
+            { id: 20, name: "Balles squash pro x12", cat: "Squash", price: 39.99, desc: "Boîte de 12 balles officielles de tournoi.", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/Squash_Ball_Dunlop_Revelation_Pro_1.jpg/500px-Squash_Ball_Dunlop_Revelation_Pro_1.jpg", sku: "BA-SQU-020", stock: 15, sold: 12, cost: 17.00, long: "Boîte de 12 balles officielles de tournoi double point jaune, pour les clubs et les joueurs réguliers qui veulent toujours une balle neuve." },
+            { id: 21, name: "Chaussures indoor padel/foot", cat: "Vêtements et accessoires", price: 79.99, desc: "Semelle non-marquante multi-surfaces.", img: "https://media.tennispro.fr/media/catalog/product/cache/1/thumbnail/1200x/9df78eab33525d08d6e5fb8d27136e95/4/9/493519-1000_bleu_1.webp", sku: "CS-VET-021", stock: 33, sold: 67, cost: 38.00, long: "Semelle en gomme non marquante qui accroche sur tous les sols intérieurs, amorti au talon et renforts latéraux pour encaisser les changements de direction.", sizes: ["39", "40", "41", "42", "43", "44", "45"], sizeLabel: "Pointure" },
+            { id: 22, name: "Short technique respirant", cat: "Vêtements et accessoires", price: 24.99, desc: "Léger avec poches latérales.", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/52/Running-shorts-black.png/500px-Running-shorts-black.png", sku: "SH-VET-022", stock: 61, sold: 89, cost: 9.00, long: "Tissu léger qui évacue la transpiration, coupe libre qui ne gêne aucun mouvement et poches latérales zippées pour garder vos clés sur le terrain.", sizes: ["S", "M", "L", "XL"] },
+            { id: 23, name: "T-shirt technique performance", cat: "Vêtements et accessoires", price: 22.99, desc: "Anti-transpiration haute respirabilité.", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80", sku: "TS-VET-023", stock: 0, sold: 154, cost: 8.50, long: "Maille anti-transpiration ultra respirante, coutures plates anti-frottements et coupe ajustée : le t-shirt qui reste sec du premier au dernier point.", sizes: ["S", "M", "L", "XL"] },
+            { id: 24, name: "Short de foot", cat: "Vêtements et accessoires", price: 19.99, desc: "Coupe ample et tissu léger.", img: "https://upload.wikimedia.org/wikipedia/commons/a/a5/Old_Puma_shorts.jpg", sku: "SH-VET-024", stock: 40, sold: 51, cost: 7.00, long: "Coupe ample et tissu léger pour une liberté totale de mouvement. Ceinture élastique avec cordon de serrage pour un maintien sans contrainte.", sizes: ["S", "M", "L", "XL"] },
+            { id: 25, name: "Gourde sport inox 750ml", cat: "Entraînement et récupération", price: 18.99, desc: "Double paroi isotherme.", img: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80", sku: "GO-REC-025", stock: 47, sold: 72, cost: 7.00, long: "Double paroi isotherme en inox : votre eau reste fraîche 24 h. Bouchon étanche et anse de transport, sans BPA." },
+            { id: 26, name: "Rouleau de massage foam roller", cat: "Entraînement et récupération", price: 21.99, desc: "Récupération musculaire et mobilité.", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/31/Wa%C5%82ek_do_masa%C5%BCu3.jpg/500px-Wa%C5%82ek_do_masa%C5%BCu3.jpg", sku: "FR-REC-026", stock: 8, sold: 39, cost: 9.50, long: "Surface texturée pour masser en profondeur les mollets, cuisses et dos après l'effort. Accélère la récupération et améliore la mobilité." },
+            { id: 27, name: "Bande élastique de résistance", cat: "Entraînement et récupération", price: 12.99, desc: "Pour l'échauffement et le renforcement.", img: "https://www.fitandrack.com/web/image/product.template/51/image_1024?unique=2c1c1a2", sku: "BE-REC-027", stock: 52, sold: 44, cost: 4.00, long: "Bande élastique pour l'échauffement des épaules avant un match de raquette ou pour le renforcement à la maison. Compacte, elle tient dans n'importe quel sac." },
+            { id: 28, name: "Sac de sport 45 L", cat: "Entraînement et récupération", price: 39.99, desc: "Compartiment chaussures séparé.", img: "https://karkoa.com/wp-content/uploads/2015/11/tepee45-description-03.jpg", sku: "SC-REC-028", stock: 19, sold: 26, cost: 16.00, long: "45 litres de rangement avec compartiment chaussures séparé, poche isotherme et bandoulière rembourrée. Le sac qui suit toutes vos sessions." }
         ];
 
         let currentCity = "nantes";
@@ -1332,7 +1550,7 @@
             header.style.display = viewId === 'auth' ? 'none' : '';
             footer.style.display = viewId === 'auth' ? 'none' : '';
 
-            if(viewId === 'shop') renderShop(boutiqueProducts);
+            if(viewId === 'shop') applyShopFilters();
             if(viewId === 'results') setTimeout(initMap, 100);
             if(viewId === 'cart') renderCart();
             if(viewId === 'pro-dashboard') renderDashboard();
@@ -1592,10 +1810,12 @@
             return blocks;
         }
 
-        // Réservations de l'utilisateur, déduites du panier
+        // Réservations de l'utilisateur
+        // Réservations faites par l'utilisateur pendant la visite
+        const myReservations = [];
         function myBookings(c, sport, offset, court) {
-            return cart.filter(it => it.ref && it.ref.complex === c.nom && it.ref.sport === sport && it.ref.date === bkDateKey(offset) && it.ref.court === court)
-                       .map(it => ({ start: it.ref.start, len: it.ref.len, mine: true }));
+            return myReservations.filter(r => r.complex === c.nom && r.sport === sport && r.date === bkDateKey(offset) && r.court === court)
+                                 .map(r => ({ start: r.start, len: r.len, mine: true }));
         }
 
         function courtOccupancy(c, sport, offset, court) {
@@ -1735,8 +1955,56 @@
                 `<div class="bs-row"><span>Date</span><span style="text-transform:capitalize;">${bkDateLabel(dayOffset)}</span></div>` +
                 row('Horaire', `${slotLabel(selection.start)} - ${slotLabel(selection.start + selection.len)}`) +
                 row('Total', `${price.toFixed(2).replace('.', ',')} €`);
+            // Paiement : tout payer par défaut, nombre de joueurs pré-rempli selon le sport
+            document.querySelector('input[name="pay-mode"][value="full"]').checked = true;
+            splitPlayers = DEFAULT_PLAYERS[sport] || 4;
+            renderSplit();
             document.getElementById('confirm-modal').classList.add('open');
             setTimeout(() => document.getElementById('confirm-firstname').focus(), 250);
+        }
+
+        // ---------- Paiement partagé ----------
+        const DEFAULT_PLAYERS = { 'Padel': 4, 'Pickleball': 4, 'Foot à 5': 10, 'Squash': 2 };
+        const SPLIT_MIN = 2, SPLIT_MAX = 12;
+        let splitPlayers = 4;
+        const eur = n => `${n.toFixed(2).replace('.', ',')} €`;
+
+        function splitDetails() {
+            const total = selectedBookingTemp.price;
+            const mode = document.querySelector('input[name="pay-mode"]:checked').value;
+            if(mode === 'onsite') return { split: false, onsite: true, total, payNow: 0 };
+            if(mode !== 'split') return { split: false, total, payNow: total };
+            const share = Math.round(total / splitPlayers * 100) / 100;
+            return { split: true, total, players: splitPlayers, share, payNow: share, rest: Math.round((total - share) * 100) / 100 };
+        }
+
+        function renderSplit() {
+            const d = splitDetails();
+            document.getElementById('pay-full-amount').innerText = eur(d.total);
+            document.getElementById('split-box').classList.toggle('open', d.split);
+            document.getElementById('onsite-note').classList.toggle('open', !!d.onsite);
+            document.getElementById('onsite-amount').innerText = eur(d.total);
+            document.getElementById('split-players').innerText = splitPlayers;
+            document.querySelectorAll('#split-box .stepper button')[0].disabled = splitPlayers <= SPLIT_MIN;
+            document.querySelectorAll('#split-box .stepper button')[1].disabled = splitPlayers >= SPLIT_MAX;
+            if(d.split) {
+                document.getElementById('split-share').innerText = eur(d.share);
+                document.getElementById('split-rest').innerText = `${eur(d.rest)} (${d.players - 1} × ${eur(d.share)})`;
+            }
+            document.getElementById('confirm-submit').innerText = d.onsite ? 'Oui, réserver · 0 € maintenant' : `Oui, réserver · ${eur(d.payNow)}`;
+        }
+
+        function changeSplitPlayers(delta) {
+            splitPlayers = Math.max(SPLIT_MIN, Math.min(SPLIT_MAX, splitPlayers + delta));
+            renderSplit();
+        }
+
+        function copyShareLink() {
+            const input = document.getElementById('share-link');
+            input.select();
+            (navigator.clipboard ? navigator.clipboard.writeText(input.value) : Promise.reject())
+                .then(() => showToast('✓ Lien copié'))
+                .catch(() => { document.execCommand('copy'); showToast('✓ Lien copié'); });
         }
 
         function closeConfirmModal() {
@@ -1747,18 +2015,15 @@
         function confirmBooking() {
             const b = selectedBookingTemp;
             const player = `${document.getElementById('confirm-firstname').value.trim()} ${document.getElementById('confirm-lastname').value.trim()}`;
-            cart.push({
-                type: 'terrain',
-                name: `Terrain ${b.sport} - ${b.complexName}`,
-                details: `Créneau : ${b.slotTime} · Au nom de ${player}`,
-                player,
-                price: b.price,
-                slot: b.slotTime,
-                sport: b.sport,
-                complex: b.complexName,
-                ref: b.ref
-            });
-            updateCartBadge();
+            const pay = splitDetails();
+            b.pay = pay;
+            // La réservation est confirmée tout de suite (elle ne passe pas par le panier, réservé aux produits)
+            myReservations.push(b.ref);
+            proReservations.push({ time: slotLabel(b.ref.start), complex: b.complexName, sport: b.sport, client: player,
+                                   players: pay.split ? pay.players : (DEFAULT_PLAYERS[b.sport] || 4), amount: pay.total,
+                                   status: pay.split ? 'Partiel' : pay.onsite ? 'Sur place' : 'Payé',
+                                   statusLabel: pay.split ? `Partiel · 1/${pay.players} payé` : null });
+            proReservations.sort((x, y) => x.time.localeCompare(y.time));
             bkState.selection = null;
             renderBookingGrid();
             closeConfirmModal();
@@ -1766,19 +2031,38 @@
         }
 
         function openCrossSell(complexName, sport, price, slotTime) {
-            document.getElementById('modal-subtitle').innerText = `${slotTime} chez ${complexName} (${sport}). Il vous attend dans votre panier.`;
-            const grid = document.getElementById('cross-sell-items');
-            
-            grid.innerHTML = `
-                <div class="shop-item" onclick="this.classList.toggle('selected')" data-name="Raquette padel débutant" data-price="39.99">
-                    <div><b>Raquette padel débutant</b><br><small style="color:var(--text-muted)">Idéal pour votre match</small></div>
-                    <span style="font-weight:800; color:var(--coral);">+ 39.99 €</span>
+            const pay = selectedBookingTemp && selectedBookingTemp.pay;
+            const payText = !pay ? '' : pay.onsite ? `${eur(pay.total)} à régler sur place.` : pay.split ? `Votre part de ${eur(pay.share)} est réglée.` : `Paiement de ${eur(pay.total)} effectué.`;
+            document.getElementById('modal-subtitle').innerText = `${slotTime} chez ${complexName} (${sport}). ${payText}`;
+            document.getElementById('share-box').classList.toggle('open', !!(pay && pay.split));
+            if(pay && pay.split) {
+                const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+                document.getElementById('share-text').innerText = `Chacun des ${pay.players - 1} autres joueurs pourra régler sa part de ${eur(pay.share)}.`;
+                document.getElementById('share-link').value = `https://playground.fr/payer/${code}`;
+            }
+            // Quatre produits de la boutique liés au sport réservé, de types différents (ex. raquette + balles + sac),
+            // complétés par des vêtements et accessoires si le sport n'a pas assez de produits en stock
+            const inStock = boutiqueProducts.filter(p => p.stock > 0 && !p.sizes);
+            const picks = [];
+            [...inStock.filter(p => p.cat === sport), ...inStock.filter(p => p.cat === 'Vêtements et accessoires')].forEach(p => {
+                const type = p.name.split(' ')[0];
+                if(picks.length < 4 && !picks.some(q => q.name.split(' ')[0] === type)) picks.push(p);
+            });
+            document.getElementById('cross-sell-items').innerHTML = picks.map(p => `
+                <div class="product-card" data-id="${p.id}" onclick="toggleCrossSell(this)">
+                    <div class="product-bg" style="background-image:url('${p.img}')"></div>
+                    <span class="product-cat">${p.cat}</span>
+                    ${p.stock <= LOW_STOCK ? `<span class="product-stock low">Plus que ${p.stock}</span>` : ''}
+                    <div class="product-info">
+                        <h4>${p.name}</h4>
+                        <p>${p.desc}</p>
+                        <div class="product-bottom">
+                            <span class="product-price">${p.price.toFixed(2)} €</span>
+                            <button type="button" class="btn-add">+ Ajouter</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="shop-item" onclick="this.classList.toggle('selected')" data-name="Balles padel x3" data-price="6.99">
-                    <div><b>Balles padel x3</b><br><small style="color:var(--text-muted)">Haute pression</small></div>
-                    <span style="font-weight:800; color:var(--coral);">+ 6.99 €</span>
-                </div>
-            `;
+            `).join('');
             const modal = document.getElementById('booking-modal');
             modal.querySelectorAll('.confetti').forEach(el => el.remove());
             modal.insertAdjacentHTML('afterbegin', confettiHtml());
@@ -1808,14 +2092,17 @@
             switchView('shop');
         }
 
+        function toggleCrossSell(card) {
+            const selected = card.classList.toggle('selected');
+            card.querySelector('.btn-add').innerText = selected ? '✓ Ajouté' : '+ Ajouter';
+        }
+
         function confirmAndAddToCart() {
-            document.querySelectorAll('#cross-sell-items .shop-item.selected').forEach(el => {
-                cart.push({
-                    type: 'materiel',
-                    name: el.getAttribute('data-name'),
-                    details: 'Option terrain',
-                    price: parseFloat(el.getAttribute('data-price'))
-                });
+            const selected = document.querySelectorAll('#cross-sell-items .product-card.selected');
+            if(!selected.length) return closeModal();
+            selected.forEach(el => {
+                const prod = boutiqueProducts.find(p => p.id === +el.dataset.id);
+                addToCart(prod, null, 1, `${prod.cat} · Option terrain`);
             });
 
             closeModal();
@@ -1823,17 +2110,85 @@
             switchView('cart');
         }
 
-        function addProductToCart(productId, btn) {
-            const prod = boutiqueProducts.find(p => p.id === productId);
-            if(prod && prod.stock > 0) {
-                cart.push({ type: 'boutique', name: prod.name, details: prod.cat, price: prod.price });
-                const card = btn ? btn.closest('.product-card') : null;
-                flyToCart(card, prod.img, () => {
-                    updateCartBadge();
-                    showToast(`✓ ${prod.name} ajouté au panier`);
-                });
-            }
+        // Panier : une ligne par produit et par taille, avec une quantité
+        const cartCount = () => cart.reduce((n, it) => n + it.qty, 0);
+
+        function addToCart(prod, size, qty, details) {
+            const line = cart.find(it => it.id === prod.id && it.size === size);
+            if(line) line.qty += qty;
+            else cart.push({ type: 'boutique', id: prod.id, name: prod.name, size, qty, price: prod.price,
+                             details: details || `${prod.cat}${size ? ` · ${prod.sizeLabel || 'Taille'} ${size}` : ''}` });
         }
+
+        // ---------- Fiche produit ----------
+        let pmProduct = null, pmSize = null, pmQty = 1;
+
+        function openProduct(id) {
+            pmProduct = boutiqueProducts.find(p => p.id === id);
+            pmSize = null;
+            pmQty = 1;
+            const p = pmProduct;
+            document.getElementById('pm-img').src = p.img;
+            document.getElementById('pm-img').alt = p.name;
+            document.getElementById('pm-cat').innerText = p.cat;
+            document.getElementById('pm-title').innerText = p.name;
+            document.getElementById('pm-price').innerText = `${p.price.toFixed(2).replace('.', ',')} €`;
+            document.getElementById('pm-desc').innerText = p.long || p.desc;
+            document.getElementById('pm-ref').innerText = `Réf. ${p.sku} · Livraison en 48 h ou retrait gratuit en complexe`;
+            const stock = document.getElementById('pm-stock');
+            stock.className = `status ${p.stock === 0 ? 'critical' : p.stock <= LOW_STOCK ? 'warning' : 'good'}`;
+            stock.innerText = p.stock === 0 ? 'Rupture de stock' : p.stock <= LOW_STOCK ? `Plus que ${p.stock} en stock` : 'En stock';
+            renderProductOptions();
+            document.getElementById('product-modal').classList.add('open');
+        }
+
+        function renderProductOptions() {
+            const p = pmProduct, out = p.stock === 0;
+            const label = (p.sizeLabel || 'Taille').toLowerCase();
+            document.getElementById('pm-size-label').innerText = p.sizeLabel || 'Taille';
+            const hint = document.getElementById('pm-size-hint');
+            hint.className = '';
+            hint.innerText = p.sizes ? (pmSize ? `· ${pmSize}` : `· Choisissez votre ${label}`) : '';
+            document.getElementById('pm-sizes').innerHTML = p.sizes
+                ? p.sizes.map(sz => `<button type="button" class="pm-size ${sz === pmSize ? 'active' : ''}" ${out ? 'disabled' : ''} onclick="selectProductSize('${sz}')">${sz}</button>`).join('')
+                : '<span class="pm-unique">Taille unique</span>';
+            const maxQty = Math.min(10, p.stock);
+            document.getElementById('pm-qty').innerText = pmQty;
+            const [minus, plus] = document.querySelectorAll('#pm-qty-stepper button');
+            minus.disabled = out || pmQty <= 1;
+            plus.disabled = out || pmQty >= maxQty;
+            const add = document.getElementById('pm-add');
+            add.disabled = out;
+            add.innerText = out ? 'Indisponible' : `Ajouter au panier · ${(p.price * pmQty).toFixed(2).replace('.', ',')} €`;
+        }
+
+        function selectProductSize(size) { pmSize = size; renderProductOptions(); }
+        function changeProductQty(delta) { pmQty = Math.max(1, Math.min(10, pmProduct.stock, pmQty + delta)); renderProductOptions(); }
+        function closeProduct() { document.getElementById('product-modal').classList.remove('open'); }
+
+        function addFromProduct() {
+            const p = pmProduct;
+            if(p.sizes && !pmSize) {
+                const hint = document.getElementById('pm-size-hint');
+                hint.innerText = `· Veuillez choisir une ${(p.sizeLabel || 'Taille').toLowerCase()}`;
+                hint.className = 'error';
+                const sizes = document.getElementById('pm-sizes');
+                sizes.classList.remove('shake'); void sizes.offsetWidth; sizes.classList.add('shake');
+                return;
+            }
+            addToCart(p, pmSize, pmQty);
+            const label = `${p.name}${pmSize ? ` (${pmSize})` : ''}${pmQty > 1 ? ` ×${pmQty}` : ''}`;
+            flyToCart(document.getElementById('pm-media'), p.img, () => {
+                updateCartBadge();
+                showToast(`✓ ${label} ajouté au panier`);
+            });
+            closeProduct();
+        }
+
+        document.getElementById('product-modal').addEventListener('click', e => {
+            if(e.target.id === 'product-modal') closeProduct();
+        });
+        document.addEventListener('keydown', e => { if(e.key === 'Escape') closeProduct(); });
 
         // L'image du produit file vers le panier en rapetissant et en tournant, puis le panier rebondit
         function flyToCart(card, imgUrl, done) {
@@ -1874,7 +2229,7 @@
 
         function updateFloatingCta() {
             const cta = document.getElementById('floating-cta');
-            document.getElementById('cta-count').innerText = cart.length;
+            document.getElementById('cta-count').innerText = cartCount();
             cta.classList.toggle('show', cart.length > 0 && currentView !== 'shop' && currentView !== 'auth');
         }
 
@@ -1956,7 +2311,7 @@
         function updateCartBadge() {
             document.getElementById('burger-dot').classList.toggle('show', cart.length > 0);
             const badge = document.getElementById('cart-counter');
-            badge.innerText = cart.length;
+            badge.innerText = cartCount();
             badge.style.display = cart.length > 0 ? 'inline-block' : 'none';
             // Relance l'animation de rebond à chaque mise à jour
             badge.classList.remove('bump');
@@ -1992,15 +2347,15 @@
             }
 
             container.innerHTML = cart.map((item, index) => {
-                total += item.price;
+                total += item.price * item.qty;
                 return `
                     <div class="cart-item">
                         <div>
                             <b>${item.name}</b>
-                            <small style="display: block; color: var(--text-muted);">${item.details}</small>
+                            <small style="display: block; color: var(--text-muted);">${item.details}${item.qty > 1 ? ` · ${item.qty} × ${item.price.toFixed(2)} €` : ''}</small>
                         </div>
                         <div style="display: flex; align-items: center; gap: 16px;">
-                            <span style="font-weight: 700; color: var(--accent);">${item.price.toFixed(2)} €</span>
+                            <span style="font-weight: 700; color: var(--accent); text-align: right; white-space: nowrap;">${item.qty > 1 ? `<small style="color: var(--text-muted); font-weight: 600;">×${item.qty}</small> ` : ''}${(item.price * item.qty).toFixed(2)} €</span>
                             <button onclick="removeFromCart(${index}, this)" style="background:none; border:none; color:var(--coral); cursor:pointer; font-weight:bold;">✕</button>
                         </div>
                     </div>
@@ -2038,16 +2393,12 @@
 
         function finalizeOrder() {
             cart.forEach(item => {
-                const prod = boutiqueProducts.find(p => p.name === item.name);
+                const prod = boutiqueProducts.find(p => p.id === item.id);
                 if(prod) {
-                    prod.sold++;
-                    prod.stock = Math.max(0, prod.stock - 1);
-                }
-                if(item.type === 'terrain') {
-                    proReservations.push({ time: item.slot, complex: item.complex, sport: item.sport, client: item.player || currentUser || 'Client web', players: 4, amount: item.price, status: 'Payé' });
+                    prod.sold += item.qty;
+                    prod.stock = Math.max(0, prod.stock - item.qty);
                 }
             });
-            proReservations.sort((a, b) => a.time.localeCompare(b.time));
             cart = [];
             updateCartBadge();
             showOrderSuccess();
@@ -2099,19 +2450,65 @@
             setTimeout(close, 3200);
         }
 
+        // Filtres de la boutique : catégorie (barre latérale) + recherche, combinés
+        let shopCat = 'all';
+
         function initShopFilters() {
             const categories = ['all', ...new Set(boutiqueProducts.map(p => p.cat))];
-            const filterBar = document.getElementById('shop-filters-bar');
-            filterBar.innerHTML = categories.map((cat, idx) => `
-                <button class="shop-chip ${idx===0?'active':''}" onclick="filterShopCategory('${cat}', this)">${cat === 'all' ? 'Tous' : cat}</button>
+            document.getElementById('shop-filters-bar').innerHTML = categories.map(cat => `
+                <button class="shop-cat ${cat === shopCat ? 'active' : ''}" onclick="filterShopCategory(${JSON.stringify(cat).replace(/"/g, '&quot;')})">
+                    <span>${cat === 'all' ? 'Tous les produits' : cat}</span>
+                    <small>${cat === 'all' ? boutiqueProducts.length : boutiqueProducts.filter(p => p.cat === cat).length}</small>
+                </button>
             `).join('');
+        }
+
+        // Affichage : 3 colonnes / 12 par page, 4 / 16 (défaut), 5 / 20
+        let shopCols = 4, shopPage = 1;
+
+        function setShopCols(cols) {
+            shopCols = cols;
+            shopPage = 1;
+            document.querySelectorAll('.layout-switch button').forEach(b => b.classList.toggle('active', +b.dataset.cols === cols));
+            applyShopFilters();
+        }
+
+        function goShopPage(page) {
+            shopPage = page;
+            applyShopFilters();
+            document.getElementById('view-shop').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function applyShopFilters() {
+            const query = document.getElementById('shop-search').value.trim().toLowerCase();
+            const products = boutiqueProducts.filter(p => (shopCat === 'all' || p.cat === shopCat) &&
+                (p.name + ' ' + p.cat + ' ' + p.desc).toLowerCase().includes(query));
+            const perPage = shopCols * 4;
+            const pages = Math.max(1, Math.ceil(products.length / perPage));
+            shopPage = Math.min(shopPage, pages);
+            const from = (shopPage - 1) * perPage;
+            const pageItems = products.slice(from, from + perPage);
+
+            const grid = document.getElementById('product-grid');
+            grid.classList.add('fixed-cols');
+            grid.classList.toggle('cols-5', shopCols === 5);
+            grid.style.setProperty('--cols', shopCols);
+            document.getElementById('shop-count').innerText = products.length
+                ? `${from + 1}–${from + pageItems.length} sur ${products.length} article${products.length > 1 ? 's' : ''}` : '0 article';
+            renderShop(pageItems);
+            if(!products.length) grid.innerHTML = '<p style="color: var(--text-muted); padding: 20px 0;">Aucun article ne correspond à votre recherche.</p>';
+
+            document.getElementById('shop-pagination').innerHTML = pages < 2 ? '' :
+                `<button ${shopPage === 1 ? 'disabled' : ''} onclick="goShopPage(${shopPage - 1})" aria-label="Page précédente">‹</button>` +
+                Array.from({ length: pages }, (_, k) => `<button class="${k + 1 === shopPage ? 'active' : ''}" onclick="goShopPage(${k + 1})">${k + 1}</button>`).join('') +
+                `<button ${shopPage === pages ? 'disabled' : ''} onclick="goShopPage(${shopPage + 1})" aria-label="Page suivante">›</button>`;
         }
 
         function renderShop(products) {
             const grid = document.getElementById('product-grid');
             grid.classList.add('stagger-in');
             grid.innerHTML = products.map((p, i) => `
-                <div class="product-card" style="--i:${Math.min(i, 12)}">
+                <div class="product-card" style="--i:${Math.min(i, 12)}" onclick="openProduct(${p.id})">
                     <div class="product-bg" style="background-image:url('${p.img}')"></div>
                     <span class="product-cat">${p.cat}</span>
                     ${p.stock === 0 ? '<span class="product-stock">Rupture</span>' : p.stock <= LOW_STOCK ? `<span class="product-stock low">Plus que ${p.stock}</span>` : ''}
@@ -2120,24 +2517,25 @@
                         <p>${p.desc}</p>
                         <div class="product-bottom">
                             <span class="product-price">${p.price.toFixed(2)} €</span>
-                            <button class="btn-add" onclick="addProductToCart(${p.id}, this)" ${p.stock === 0 ? 'disabled' : ''}>${p.stock === 0 ? 'Indisponible' : '+ Ajouter'}</button>
+                            <button class="btn-add" ${p.stock === 0 ? 'disabled' : ''}>${p.stock === 0 ? 'Indisponible' : p.sizes ? `Choisir la ${(p.sizeLabel || 'Taille').toLowerCase()}` : '+ Ajouter'}</button>
                         </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        function filterShopCategory(cat, btn) {
-            document.querySelectorAll('.shop-chip').forEach(c => c.classList.remove('active'));
-            if(btn) btn.classList.add('active');
-            if(cat === 'all') renderShop(boutiqueProducts);
-            else renderShop(boutiqueProducts.filter(p => p.cat === cat));
+        function filterShopCategory(cat) {
+            shopCat = cat;
+            shopPage = 1;
+            initShopFilters();
+            applyShopFilters();
+            // Sur mobile (bandeau horizontal), on garde la catégorie choisie visible
+            const bar = document.getElementById('shop-filters-bar');
+            const active = bar.querySelector('.shop-cat.active');
+            if(bar.scrollWidth > bar.clientWidth) bar.scrollLeft = active.offsetLeft - (bar.clientWidth - active.offsetWidth) / 2;
         }
 
-        function filterShopProducts() {
-            const query = document.getElementById('shop-search').value.toLowerCase();
-            renderShop(boutiqueProducts.filter(p => p.name.toLowerCase().includes(query) || p.cat.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query)));
-        }
+        function filterShopProducts() { shopPage = 1; applyShopFilters(); }
 
         // ---------- FAQ ----------
         function renderFaq() {
@@ -2300,7 +2698,7 @@
         }
 
         function renderReservations() {
-            const statusKey = { 'Payé': 'good', 'En attente': 'warning', 'Annulé': 'critical' };
+            const statusKey = { 'Payé': 'good', 'Partiel': 'warning', 'Sur place': 'warning', 'En attente': 'warning', 'Annulé': 'critical' };
             document.getElementById('resa-table-body').innerHTML = proReservations.map(r => `
                 <tr>
                     <td><b>${r.time}</b></td>
@@ -2309,7 +2707,7 @@
                     <td>${r.client}</td>
                     <td class="num">${r.players}</td>
                     <td class="num">${euro.format(r.amount)}</td>
-                    <td><span class="status ${statusKey[r.status]}">${r.status}</span></td>
+                    <td><span class="status ${statusKey[r.status]}">${r.statusLabel || r.status}</span></td>
                 </tr>
             `).join('');
             const paid = proReservations.filter(r => r.status === 'Payé').length;
